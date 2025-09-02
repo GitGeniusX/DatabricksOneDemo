@@ -594,3 +594,446 @@ class VirtualizedChart {
 // Debounced filter updates
 const debouncedFilterUpdate = debounce(updateFilters, 300);
 ```
+
+## Visual Layout Specifications
+
+### Home Page Layout
+```
+┌─────────────────────────────────────────────────────────┐
+│ Header: Logo | Global Search | User Profile | Alerts    │
+├─────────────────────────────────────────────────────────┤
+│ Nav │ Hero Section: Welcome + Key Metrics Overview      │
+│     │                                                   │
+│ •   │ ┌─────────────┐ ┌─────────────┐                 │
+│ •   │ │ Financial   │ │ Delivery &  │                 │
+│ •   │ │ Performance │ │ Operations  │                 │
+│ •   │ │   📊 €2.4M  │ │   ⚡ 82%    │                 │
+│ •   │ └─────────────┘ └─────────────┘                 │
+│     │                                                   │
+│     │ ┌─────────────┐ ┌─────────────┐                 │
+│     │ │ People &    │ │ Client      │                 │
+│     │ │ Talent      │ │ Success     │                 │
+│     │ │   👥 235    │ │   😊 8.2    │                 │
+│     │ └─────────────┘ └─────────────┘                 │
+│     │                                                   │
+│     │ ┌─────────────────────────────┐                 │
+│     │ │ Strategic Overview          │                 │
+│     │ │        📈 Board View        │                 │
+│     │ └─────────────────────────────┘                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Domain Dashboard Layout
+```
+┌─────────────────────────────────────────────────────────┐
+│ Breadcrumb: Home > Financial Performance                │
+├─────────────────────────────────────────────────────────┤
+│ KPI Header Row                                          │
+│ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐               │
+│ │Rev  │ │Margin│ │Rev/ │ │Avg  │ │Pipe │               │
+│ │€2.4M│ │34.5%│ │Cons │ │Rate │ │Cov  │               │
+│ │+12%│ │-2.1%│ │€85K │ │€950 │ │78% │               │
+│ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘               │
+├─────────────────────────────────────────────────────────┤
+│ Forecast Lane                                           │
+│ ┌─────────────────┐ ┌─────────────────┐               │
+│ │ Revenue Forecast│ │ Rolling Growth  │               │
+│ │   📈 Line +Band │ │   📊 Column+Line│               │
+│ └─────────────────┘ └─────────────────┘               │
+│ ┌─────────────────────────────────────┐               │
+│ │ Profitability Waterfall             │               │
+│ │        💰 Monthly Breakdown         │               │
+│ └─────────────────────────────────────┘               │
+├─────────────────────────────────────────────────────────┤
+│ Interaction Panel                                       │
+│ [BU▼] [Country▼] [Service▼] [Tier▼] [Explain Variance] │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Chart Interaction Patterns
+```mermaid
+sequenceDiagram
+    participant User
+    participant KPICard
+    participant FilterSystem
+    participant Charts
+    
+    User->>KPICard: Click Revenue Card
+    KPICard->>FilterSystem: Apply Revenue Filter
+    FilterSystem->>Charts: Update Data Query
+    Charts->>Charts: Animate Transition
+    Charts->>User: Show Filtered Results
+    
+    User->>Charts: Click Chart Point
+    Charts->>FilterSystem: Drill Down Filter
+    FilterSystem->>Charts: Load Detail View
+    Charts->>User: Show Detail Panel
+```
+
+## Interactive Behavior Specifications
+
+### Click-to-Filter Flow
+```javascript
+// KPI Card Click Handler
+function handleKPIClick(kpiType, currentValue) {
+  // 1. Visual feedback
+  showLoadingSpinner();
+  highlightActiveKPI(kpiType);
+  
+  // 2. Apply filter
+  const filterCriteria = {
+    metric: kpiType,
+    value: currentValue,
+    operator: 'focus'
+  };
+  
+  // 3. Update all charts
+  updateChartsWithFilter(filterCriteria);
+  
+  // 4. Update URL state
+  updateURLParams({ filter: kpiType });
+  
+  // 5. Show filtered state indicator
+  showActiveFilterBadge(kpiType);
+}
+```
+
+### Chart Point Click Behavior
+```javascript
+// Chart point interaction
+function handleChartPointClick(chartType, dataPoint) {
+  const actions = {
+    'utilization-heatmap': (point) => {
+      showStaffingSuggestions(point.team, point.week);
+    },
+    'overrun-rate': (point) => {
+      showProjectRiskList(point.period);
+    },
+    'skills-gap': (point) => {
+      showHiringRecommendations(point.skill);
+    },
+    'client-revenue': (point) => {
+      navigateToClientDetail(point.clientId);
+    }
+  };
+  
+  if (actions[chartType]) {
+    actions[chartType](dataPoint);
+  }
+}
+```
+
+### Side Panel Interactions
+```javascript
+// Explain Variance Panel
+function showExplainVariancePanel(metric) {
+  const panel = {
+    title: `${metric} Variance Analysis`,
+    content: {
+      drivers: [
+        { factor: 'Rate Changes', impact: '+€120K', percentage: '60%' },
+        { factor: 'Utilization', impact: '-€45K', percentage: '23%' },
+        { factor: 'Mix Shift', impact: '+€25K', percentage: '17%' }
+      ],
+      recommendations: [
+        'Focus on premium service lines',
+        'Optimize bench allocation',
+        'Review pricing strategy'
+      ]
+    }
+  };
+  
+  renderSidePanel(panel);
+}
+```
+
+## Search & Ask Interface Design
+
+### Search Results Layout
+```
+┌─────────────────────────────────────────────────────────┐
+│ Search: "cloud revenue"                    [🔍]         │
+├─────────────────────────────────────────────────────────┤
+│ Filters: [Domain▼] [Date▼] [BU▼]                       │
+├─────────────────────────────────────────────────────────┤
+│ 📊 KPIs (3)                                            │
+│   • Cloud Revenue YTD: €1.2M (+15%)                    │
+│   • Cloud Margin: 28.5% (-1.2%)                        │
+│   • Cloud Utilization: 85% (+3%)                       │
+├─────────────────────────────────────────────────────────┤
+│ 📈 Dashboards (2)                                      │
+│   • Financial Performance > Cloud BU                   │
+│   • Delivery Operations > Cloud Projects               │
+├─────────────────────────────────────────────────────────┤
+│ 📋 Projects (5)                                        │
+│   • Nordea Cloud Migration (€450K, 85% complete)       │
+│   • SEB Analytics Platform (€320K, 60% complete)       │
+│   • ... 3 more                                         │
+├─────────────────────────────────────────────────────────┤
+│ 👥 People (3)                                          │
+│   • Lars Andersen (Cloud Architect, 92% util)          │
+│   • ... 2 more                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Ask Interface Design
+```
+┌─────────────────────────────────────────────────────────┐
+│ Ask Qoder Analytics                                     │
+├─────────────────────────────────────────────────────────┤
+│ 💬 "Why did margin drop last month in Cloud BU?"       │
+│                                                [Ask]    │
+├─────────────────────────────────────────────────────────┤
+│ 🤖 Answer Summary:                                      │
+│   • Rate compression (-€50/day avg) due to competitive │
+│     pressure on 3 major deals                          │
+│   • Increased junior staff ratio (65% vs 45% target)   │
+│   • Project overruns on SEB engagement (+120hrs)       │
+├─────────────────────────────────────────────────────────┤
+│ 📊 Supporting Visuals:                                 │
+│   [Chart: Cloud BU Rate Trend]                         │
+│   [Chart: Staff Mix Evolution]                         │
+│   [Chart: Project Budget vs Actual]                    │
+├─────────────────────────────────────────────────────────┤
+│ 🔍 Data Scope: Nordic • Cloud BU • Jan-Mar 2024       │
+│ 📝 Reproducible Query: SHOW margin_analysis WHERE...   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Example Questions for Ask Interface
+```javascript
+const exampleQuestions = [
+  "Why did margin drop last month in Cloud BU?",
+  "Forecast bench in Sweden for 8 weeks and propose redeployments",
+  "Which clients are at churn risk next quarter?",
+  "Show me top 5 projects by overrun risk",
+  "What's the skills gap in our Analytics practice?",
+  "Compare utilization across Nordic countries",
+  "Which consultants should I assign to the new Volvo project?"
+];
+```
+
+## Modal Dialog Specifications
+
+### Project Detail Modal
+```
+┌─────────────────────────────────────────────────────────┐
+│ Project: SEB Analytics Platform                    [×]  │
+├─────────────────────────────────────────────────────────┤
+│ Overview    Budget    Schedule    Team    Risks         │
+├─────────────────────────────────────────────────────────┤
+│ Status: 🟡 At Risk        Health Score: 72/100         │
+│ Budget: €320K (75% spent) Margin: 22% (target: 28%)    │
+│ Timeline: 8 weeks remain  Delivery: Mar 15, 2024       │
+├─────────────────────────────────────────────────────────┤
+│ Key Metrics:                                            │
+│ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐       │
+│ │ Burn Rate   │ │ Completion  │ │ Client NPS  │       │
+│ │   €15K/wk   │ │    60%      │ │     7.5     │       │
+│ └─────────────┘ └─────────────┘ └─────────────┘       │
+├─────────────────────────────────────────────────────────┤
+│ 📈 Forecast to Complete (S-Curve)                      │
+│ [Chart showing planned vs actual vs forecast]          │
+├─────────────────────────────────────────────────────────┤
+│ ⚠️ Active Risks:                                       │
+│   • Scope creep in data migration (+3 weeks est.)      │
+│   • Key resource (Lars) allocated to other project     │
+│   • Client IT review delayed (medium impact)           │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Client Detail Modal
+```
+┌─────────────────────────────────────────────────────────┐
+│ Client: SEB Bank                                   [×]  │
+├─────────────────────────────────────────────────────────┤
+│ Overview    Projects    Opportunities    Health         │
+├─────────────────────────────────────────────────────────┤
+│ Tier: Enterprise         Relationship: 4 years         │
+│ Revenue YTD: €1.2M       Concentration: 12% of total   │
+│ NPS Score: 8.2          Churn Risk: 🟢 Low            │
+├─────────────────────────────────────────────────────────┤
+│ 📊 Revenue Trend (24 months)                           │
+│ [Line chart showing monthly revenue]                    │
+├─────────────────────────────────────────────────────────┤
+│ 🎯 Active Projects (3):                                │
+│   • Analytics Platform (€320K, 60% complete)           │
+│   • Cloud Migration Phase 2 (€180K, planning)         │
+│   • Compliance Review (€45K, 90% complete)             │
+├─────────────────────────────────────────────────────────┤
+│ 💰 Pipeline (€890K):                                   │
+│   • Digital Transformation (€650K, 70% confidence)     │
+│   • Data Governance (€240K, 45% confidence)            │
+├─────────────────────────────────────────────────────────┤
+│ 📅 Key Dates:                                          │
+│   • Contract Renewal: Dec 2024                         │
+│   • QBR Scheduled: Apr 15, 2024                        │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Animation and Transition Specifications
+
+### Page Transitions
+```css
+/* Smooth page transitions */
+.page-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-enter {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Chart loading animation */
+.chart-loading {
+  position: relative;
+}
+
+.chart-loading::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--light-gray);
+  border-top: 3px solid var(--primary-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+```
+
+### Hover Effects
+```css
+/* Interactive hover states */
+.kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(31, 71, 136, 0.15);
+  transition: all 0.2s ease;
+}
+
+.chart-point:hover {
+  r: 6;
+  transition: r 0.2s ease;
+}
+
+.filter-button:hover {
+  background: var(--primary-blue);
+  color: white;
+  transform: scale(1.05);
+  transition: all 0.2s ease;
+}
+```
+
+## Error Handling and Loading States
+
+### Loading State Components
+```javascript
+// Skeleton loading for charts
+function showChartSkeleton(container) {
+  container.innerHTML = `
+    <div class="skeleton-chart">
+      <div class="skeleton-title"></div>
+      <div class="skeleton-bars">
+        <div class="skeleton-bar" style="height: 60%"></div>
+        <div class="skeleton-bar" style="height: 80%"></div>
+        <div class="skeleton-bar" style="height: 45%"></div>
+        <div class="skeleton-bar" style="height: 90%"></div>
+        <div class="skeleton-bar" style="height: 70%"></div>
+      </div>
+    </div>
+  `;
+}
+
+// Loading states for different components
+const loadingStates = {
+  kpiCards: () => showKPISkeletons(),
+  charts: (container) => showChartSkeleton(container),
+  search: () => showSearchSpinner(),
+  modal: () => showModalSpinner()
+};
+```
+
+### Error States
+```javascript
+// Error handling for different scenarios
+function handleError(type, error) {
+  const errorMessages = {
+    'data-load': 'Unable to load data. Please try again.',
+    'chart-render': 'Chart could not be displayed.',
+    'search': 'Search temporarily unavailable.',
+    'filter': 'Filter could not be applied.'
+  };
+  
+  showErrorToast(errorMessages[type] || 'An error occurred.');
+  
+  // Log error for debugging
+  console.error(`${type} error:`, error);
+}
+```
+
+## Browser Compatibility and Progressive Enhancement
+
+### Feature Detection
+```javascript
+// Progressive enhancement strategy
+const features = {
+  localStorage: typeof Storage !== "undefined",
+  intersectionObserver: 'IntersectionObserver' in window,
+  cssGrid: CSS.supports('display', 'grid'),
+  webGL: !!document.createElement('canvas').getContext('webgl')
+};
+
+// Fallback implementations
+if (!features.localStorage) {
+  // Use session-only state management
+  window.mockStorage = {
+    data: {},
+    setItem: function(key, value) { this.data[key] = value; },
+    getItem: function(key) { return this.data[key]; }
+  };
+}
+
+if (!features.cssGrid) {
+  // Fallback to flexbox layout
+  document.documentElement.classList.add('no-grid');
+}
+```
+
+### Performance Monitoring
+```javascript
+// Performance tracking for mockup
+class PerformanceMonitor {
+  static trackPageLoad(pageName) {
+    const loadTime = performance.now();
+    console.log(`${pageName} loaded in ${loadTime.toFixed(2)}ms`);
+    
+    // Check against targets
+    const targets = { home: 2500, domain: 3500 };
+    if (loadTime > targets[pageName]) {
+      console.warn(`${pageName} load time exceeded target`);
+    }
+  }
+  
+  static trackChartRender(chartType) {
+    const startTime = performance.mark('chart-start');
+    // ... chart rendering logic
+    const endTime = performance.mark('chart-end');
+    const renderTime = performance.measure('chart-render', 'chart-start', 'chart-end');
+    
+    console.log(`${chartType} rendered in ${renderTime.duration.toFixed(2)}ms`);
+  }
+}
+```
