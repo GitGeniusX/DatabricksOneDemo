@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulting Analytics Dashboard</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation Header -->
+        <header class="navigation-header">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics Hub</span>
+                </div>
+                <div class="global-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search KPIs, projects, clients..." id="global-search-input">
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="notification-bell">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="user-profile">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiMxZjQ3ODgiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Im04IDhoLTIgMnYyaDJ2LTJ6bTAtNGgtMnYyaDJ2LTJ6IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+" alt="User Avatar">
+                    <span class="user-name">Johan</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Container -->
+        <div class="main-container">
+            <!-- Side Navigation -->
+            <nav class="side-navigation" id="side-nav">
+                <div class="nav-menu">
+                    <div class="nav-item active" data-page="home">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </div>
+                    <div class="nav-item" data-page="financial">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Financial Performance</span>
+                    </div>
+                    <div class="nav-item" data-page="delivery">
+                        <i class="fas fa-tasks"></i>
+                        <span>Delivery & Operations</span>
+                    </div>
+                    <div class="nav-item" data-page="people">
+                        <i class="fas fa-users"></i>
+                        <span>People & Talent</span>
+                    </div>
+                    <div class="nav-item" data-page="client">
+                        <i class="fas fa-handshake"></i>
+                        <span>Client Success</span>
+                    </div>
+                    <div class="nav-item" data-page="strategic">
+                        <i class="fas fa-chess"></i>
+                        <span>Strategic / Board</span>
+                    </div>
+                    <div class="nav-separator"></div>
+                    <div class="nav-item" data-page="search">
+                        <i class="fas fa-search"></i>
+                        <span>Search</span>
+                    </div>
+                    <div class="nav-item" data-page="ask">
+                        <i class="fas fa-comment-dots"></i>
+                        <span>Ask AI</span>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="main-content" id="main-content">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav" id="breadcrumb">
+                    <span class="breadcrumb-item active">Home</span>
+                </div>
+
+                <!-- Content Area -->
+                <div class="content-area" id="content-area">
+                    <!-- Content will be dynamically loaded here -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading...</span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/interactions.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
