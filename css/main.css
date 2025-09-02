@@ -108,7 +108,7 @@ body {
   font-weight: var(--font-weight-normal);
   line-height: 1.5;
   color: var(--text-primary);
-  background-color: var(--bg-light);
+  background-color: var(--white);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -399,4 +399,34 @@ input, select, textarea {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Force light theme - override any dark mode */
+* {
+  color-scheme: light !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  * {
+    background-color: var(--white) !important;
+    color: var(--text-primary) !important;
+  }
+  
+  body {
+    background: var(--white) !important;
+    color: var(--text-primary) !important;
+  }
+  
+  #app {
+    background: var(--white) !important;
+  }
+}
+
+html {
+  background: var(--white) !important;
+}
+
+body {
+  background: var(--white) !important;
+  color: var(--text-primary) !important;
 }

@@ -1,5 +1,92 @@
 /* ======================================
-   Responsive Design
+   Databricks Home Responsive Design
+   ====================================== */
+
+@media screen and (max-width: 768px) {
+  .databricks-home {
+    padding: var(--spacing-xl) var(--spacing-md);
+  }
+  
+  .greeting-text {
+    font-size: var(--font-size-3xl);
+  }
+  
+  .greeting-subtitle {
+    font-size: var(--font-size-lg);
+  }
+  
+  .search-container {
+    max-width: 100%;
+  }
+  
+  .main-search-input {
+    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-md) var(--spacing-md);
+    font-size: var(--font-size-base);
+  }
+  
+  .search-submit-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .toggle-btn {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-size-xs);
+  }
+  
+  .hero-cards {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+  
+  .hero-card {
+    padding: var(--spacing-lg);
+  }
+  
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    font-size: var(--font-size-lg);
+  }
+  
+  .card-title {
+    font-size: var(--font-size-base);
+  }
+  
+  .navigation-chips {
+    gap: var(--spacing-xs);
+  }
+  
+  .nav-chip {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-size-xs);
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .search-toggle-buttons {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+  
+  .toggle-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .navigation-chips {
+    justify-content: stretch;
+    flex-direction: column;
+  }
+  
+  .nav-chip {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ======================================
+   Existing Responsive Design
    ====================================== */
 
 /* ======================================

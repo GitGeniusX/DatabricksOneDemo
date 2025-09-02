@@ -129,6 +129,14 @@ class NavigationManager {
         item.classList.add('active');
       }
     });
+    
+    // Update main container layout for home page
+    const mainContainer = document.querySelector('.main-container');
+    if (page === 'home') {
+      mainContainer.classList.add('home-layout');
+    } else {
+      mainContainer.classList.remove('home-layout');
+    }
   }
 
   updateBreadcrumb(page) {
@@ -224,11 +232,61 @@ class NavigationManager {
   }
 
   initHomePage() {
-    // Initialize domain tile click handlers
-    document.querySelectorAll('.domain-tile').forEach(tile => {
-      tile.addEventListener('click', (e) => {
+    // Initialize domain card click handlers
+    document.querySelectorAll('.hero-card[data-domain]').forEach(card => {
+      card.addEventListener('click', (e) => {
         const domain = e.currentTarget.dataset.domain;
         this.navigateTo(domain);
+      });
+    });
+    
+    // Initialize search toggle buttons
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        // Remove active class from all buttons
+        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+        // Add active class to clicked button
+        e.currentTarget.classList.add('active');
+        
+        const mode = e.currentTarget.dataset.mode;
+        const placeholder = mode === 'search' ? 'Search datasets, tables, dashboards in Databricks...' : 'Ask anything about your Databricks data and analytics...';
+        document.getElementById('main-search-input').placeholder = placeholder;
+      });
+    });
+    
+    // Initialize main search input
+    const searchInput = document.getElementById('main-search-input');
+    const searchBtn = document.querySelector('.search-submit-btn');
+    
+    if (searchInput && searchBtn) {
+      const handleSearch = () => {
+        const query = searchInput.value.trim();
+        if (query) {
+          const activeMode = document.querySelector('.toggle-btn.active').dataset.mode;
+          sessionStorage.setItem('searchQuery', query);
+          this.navigateTo(activeMode === 'ask' ? 'ask' : 'search');
+        }
+      };
+      
+      searchBtn.addEventListener('click', handleSearch);
+      searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          handleSearch();
+        }
+      });
+    }
+    
+    // Initialize navigation chips
+    document.querySelectorAll('.nav-chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        // Remove active class from all chips
+        document.querySelectorAll('.nav-chip').forEach(c => c.classList.remove('active'));
+        // Add active class to clicked chip
+        e.currentTarget.classList.add('active');
+        
+        const tab = e.currentTarget.dataset.tab;
+        console.log(`Navigation chip clicked: ${tab}`);
+        // Future: implement tab-specific content filtering
       });
     });
   }
@@ -370,147 +428,122 @@ class NavigationManager {
 const pageTemplates = {
   home() {
     return `
-      <div class="home-hero">
-        <h1 class="home-hero-title">Knowit Analytics</h1>
-        <p class="home-hero-subtitle">
-          Comprehensive business intelligence across Financial Performance, Delivery Operations, 
-          People & Talent, Client Success, and Strategic insights for Nordic consulting excellence.
-        </p>
-        <div class="home-hero-metrics">
-          <div class="home-hero-metric">
-            <span class="home-hero-metric-value">€2.4M</span>
-            <span class="home-hero-metric-label">YTD Revenue</span>
+      <div class="databricks-home">
+        <div class="home-greeting">
+          <h1 class="greeting-text">Hi, Johan</h1>
+          <p class="greeting-subtitle">What would you like to know?</p>
+        </div>
+        
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <input type="text" class="main-search-input" placeholder="Ask anything about your Databricks data and analytics..." id="main-search-input">
+            <button class="search-submit-btn">
+              <i class="fas fa-paper-plane"></i>
+            </button>
           </div>
-          <div class="home-hero-metric">
-            <span class="home-hero-metric-value">82%</span>
-            <span class="home-hero-metric-label">Utilization</span>
-          </div>
-          <div class="home-hero-metric">
-            <span class="home-hero-metric-value">8.2</span>
-            <span class="home-hero-metric-label">Client NPS</span>
+          
+          <div class="search-toggle-buttons">
+            <button class="toggle-btn" data-mode="search">
+              <i class="fas fa-search"></i>
+              Search Data
+            </button>
+            <button class="toggle-btn active" data-mode="ask">
+              <i class="fas fa-robot"></i>
+              Ask AI
+            </button>
           </div>
         </div>
-      </div>
-
-      <div class="domain-tiles">
-        <div class="domain-tile financial" data-domain="financial">
-          <div class="domain-tile-icon">
-            <i class="fas fa-chart-bar"></i>
-          </div>
-          <h3 class="domain-tile-title">Financial Performance</h3>
-          <p class="domain-tile-description">
-            Revenue tracking, margin analysis, billing rates, and pipeline coverage metrics.
-          </p>
-          <div class="domain-tile-metrics">
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">€2.4M</div>
-              <div class="domain-tile-metric-label">Revenue</div>
+        
+        <div class="hero-cards">
+          <div class="hero-card domain-card" data-domain="financial">
+            <div class="card-header">
+              <span class="card-type">Domain</span>
             </div>
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">34.5%</div>
-              <div class="domain-tile-metric-label">Margin</div>
-            </div>
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">€950</div>
-              <div class="domain-tile-metric-label">Avg Rate</div>
+            <div class="card-content">
+              <div class="card-icon">
+                <i class="fas fa-chart-bar"></i>
+              </div>
+              <h3 class="card-title">Financial Performance</h3>
             </div>
           </div>
-        </div>
-
-        <div class="domain-tile delivery" data-domain="delivery">
-          <div class="domain-tile-icon">
-            <i class="fas fa-tasks"></i>
-          </div>
-          <h3 class="domain-tile-title">Delivery & Operations</h3>
-          <p class="domain-tile-description">
-            Utilization tracking, project delivery, resource allocation, and operational efficiency.
-          </p>
-          <div class="domain-tile-metrics">
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">82%</div>
-              <div class="domain-tile-metric-label">Utilization</div>
+          
+          <div class="hero-card domain-card" data-domain="delivery">
+            <div class="card-header">
+              <span class="card-type">Domain</span>
             </div>
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">12%</div>
-              <div class="domain-tile-metric-label">Bench</div>
-            </div>
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">94%</div>
-              <div class="domain-tile-metric-label">On-Time</div>
+            <div class="card-content">
+              <div class="card-icon">
+                <i class="fas fa-tasks"></i>
+              </div>
+              <h3 class="card-title">Delivery & Operations</h3>
             </div>
           </div>
-        </div>
-
-        <div class="domain-tile people" data-domain="people">
-          <div class="domain-tile-icon">
-            <i class="fas fa-users"></i>
-          </div>
-          <h3 class="domain-tile-title">People & Talent</h3>
-          <p class="domain-tile-description">
-            Headcount management, attrition tracking, skills development, and talent analytics.
-          </p>
-          <div class="domain-tile-metrics">
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">235</div>
-              <div class="domain-tile-metric-label">Headcount</div>
+          
+          <div class="hero-card domain-card" data-domain="people">
+            <div class="card-header">
+              <span class="card-type">Domain</span>
             </div>
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">8.5%</div>
-              <div class="domain-tile-metric-label">Attrition</div>
-            </div>
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">15d</div>
-              <div class="domain-tile-metric-label">Time to Staff</div>
+            <div class="card-content">
+              <div class="card-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <h3 class="card-title">People & Talent</h3>
             </div>
           </div>
-        </div>
-
-        <div class="domain-tile client" data-domain="client">
-          <div class="domain-tile-icon">
-            <i class="fas fa-handshake"></i>
+          
+          <div class="hero-card genie-card">
+            <div class="card-header">
+              <span class="card-type">Genie Space</span>
+            </div>
+            <div class="card-content">
+              <div class="card-icon">
+                <i class="fas fa-magic"></i>
+              </div>
+              <h3 class="card-title">Q1 Performance Genie</h3>
+            </div>
           </div>
-          <h3 class="domain-tile-title">Client Success</h3>
-          <p class="domain-tile-description">
-            NPS tracking, retention analysis, repeat business, and client relationship metrics.
-          </p>
-          <div class="domain-tile-metrics">
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">8.2</div>
-              <div class="domain-tile-metric-label">NPS</div>
+          
+          <div class="hero-card analytics-card" data-domain="client">
+            <div class="card-preview">
+              <div class="preview-charts">
+                <div class="mini-chart">
+                  <div class="chart-bars">
+                    <div class="bar" style="height: 40%"></div>
+                    <div class="bar" style="height: 60%"></div>
+                    <div class="bar" style="height: 80%"></div>
+                    <div class="bar" style="height: 45%"></div>
+                  </div>
+                </div>
+                <div class="mini-pie">
+                  <div class="pie-chart"></div>
+                </div>
+              </div>
             </div>
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">68%</div>
-              <div class="domain-tile-metric-label">Repeat</div>
-            </div>
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">€185K</div>
-              <div class="domain-tile-metric-label">Avg Deal</div>
+            <div class="card-content">
+              <div class="card-icon-small">
+                <i class="fas fa-chart-pie"></i>
+              </div>
+              <h3 class="card-title-small">Client Success Analytics</h3>
             </div>
           </div>
         </div>
-
-        <div class="domain-tile strategic" data-domain="strategic">
-          <div class="domain-tile-icon">
-            <i class="fas fa-chess"></i>
-          </div>
-          <h3 class="domain-tile-title">Strategic / Board</h3>
-          <p class="domain-tile-description">
-            EBITDA analysis, innovation metrics, service mix evolution, and balanced scorecard.
-          </p>
-          <div class="domain-tile-metrics">
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">18.2%</div>
-              <div class="domain-tile-metric-label">EBITDA</div>
-            </div>
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">35%</div>
-              <div class="domain-tile-metric-label">Digital</div>
-            </div>
-            <div class="domain-tile-metric">
-              <div class="domain-tile-metric-value">12%</div>
-              <div class="domain-tile-metric-label">Innovation</div>
-            </div>
-          </div>
+        
+        <div class="navigation-chips">
+          <button class="nav-chip active" data-tab="for-you">
+            For you
+          </button>
+          <button class="nav-chip" data-tab="genie-spaces">
+            Genie Spaces
+          </button>
+          <button class="nav-chip" data-tab="domains">
+            Domains
+          </button>
+          <button class="nav-chip" data-tab="dashboards">
+            Dashboards
+          </button>
+          <button class="nav-chip" data-tab="apps">
+            Apps
+          </button>
         </div>
       </div>
     `;
@@ -622,22 +655,23 @@ const pageTemplates = {
       <div class="ask-container">
         <div class="ask-input-container">
           <textarea id="ask-input" class="ask-input" 
-                    placeholder="Ask a question about your business data..."></textarea>
+                    placeholder="Ask a question about your Databricks data, analytics, or business metrics..."></textarea>
           
           <div class="ask-examples">
             <div class="ask-examples-title">Try these examples:</div>
             <div class="ask-example-buttons">
-              <button class="ask-example-button">Why did margin drop last month in Cloud BU?</button>
-              <button class="ask-example-button">Forecast bench in Sweden for 8 weeks</button>
-              <button class="ask-example-button">Which clients are at churn risk next quarter?</button>
-              <button class="ask-example-button">Show top performers by utilization</button>
+              <button class="ask-example-button">What are our top performing products by revenue this quarter?</button>
+              <button class="ask-example-button">Show me customer churn trends in the last 6 months</button>
+              <button class="ask-example-button">Which markets have the highest growth potential?</button>
+              <button class="ask-example-button">Analyze utilization rates across all business units</button>
+              <button class="ask-example-button">What's driving the revenue variance in Q1?</button>
             </div>
           </div>
           
           <div class="page-actions">
             <button id="ask-button" class="btn btn-primary">
-              <i class="fas fa-paper-plane"></i>
-              Ask Question
+              <i class="fas fa-robot"></i>
+              Ask Databricks AI
             </button>
           </div>
         </div>

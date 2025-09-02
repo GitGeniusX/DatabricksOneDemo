@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Knowit Performance Hub — Sprint 0 (Canvas Mockup)</title>
+<style>
+:root{
+   /* Sprint 0 theme tokens (approximate Knowit aesthetic; replace in Sprint 2 with brandbook values) */
+   --bg: #f9fafb;
+   --card-bg: #ffffff;
+   --text: #0f172a;          /* slate-900 */
+   --muted: #6b7280;         /* slate-500 */
+   --shadow: 0 10px 30px rgba(0,0,0,0.06);
+   --primary: #6b5b95;       /* lilac / violet used in demo (placeholder) */
+   --primary-alt: #88a1ff;   /* soft indigo for comparisons */
+   --accent:#b492f0;
+   --radius: 16px;
+}
+*{ box-sizing: border-box; }
+body { margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", sans-serif; color: var(--text);
+  background: radial-gradient(1200px 600px at 50% 0%, #efeaff, #f6f7fb 60%, #ffffff 100%);
+}
+.container { max-width: 1200px; margin: 0 auto; padding: 32px; }
+.header { display:flex; align-items:center; justify-content: space-between; }
+.brand { display:flex; align-items:center; gap:12px; }
+.brand .logo { width: 28px; height: 28px; border-radius:6px; background: linear-gradient(135deg, var(--primary), var(--accent)); }
+.user { width:36px; height:36px; border-radius:50%; background: #e5e7eb; display:flex; align-items:center; justify-content:center;font-weight:600; }
+.hero { margin: 24px 0 18px; text-align:center; }
+.hero h1 { font-size: 34px; margin: 10px 0 4px; letter-spacing:-0.3px; }
+.hero p { color: var(--muted); margin:0; }
+
+.search { display:flex; justify-content:center; margin-top: 16px; }
+.search .box { display:flex; align-items:center; gap:8px; width: 100%; max-width: 900px; background: var(--card-bg); border: 1px solid #eceaf6; box-shadow: var(--shadow); padding:12px; border-radius: 999px; }
+.btn-toggle { padding: 8px 12px; border-radius: 999px; border:1px solid #eceaf6; background:#f6f5fb; color:#5b5b77; cursor:pointer; }
+.btn-toggle.active { background: linear-gradient(135deg, var(--primary), var(--accent)); color:white; border-color:transparent; }
+.search input { flex:1; border:none; outline:none; font-size: 16px; padding: 10px 4px; background: transparent; }
+.search .go {border: none; background: transparent; cursor:pointer; font-size: 20px; color: var(--primary); padding:8px 12px;}
+
+.cards { display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 28px;}
+.card { background: var(--card-bg); border:1px solid #eceaf6; border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.1s ease, box-shadow 0.1s ease; min-height: 150px; display:flex; flex-direction:column; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
+.card .label { font-size: 12px; color: var(--muted); }
+.card h3 { margin: 6px 0 8px; font-size: 18px; }
+.card canvas.mini { width: 100%; height: 72px; margin-top: 8px; }
+
+.tabs { display:flex; gap:10px; justify-content:center; margin:20px 0 8px; }
+.tab-chip { border:1px solid #eceaf6; background: #fff; padding:6px 12px; border-radius: 16px; cursor:pointer; color: #65698a; }
+.tab-chip.active { background: #f5f2ff; border-color: #e6ddff; color: var(--primary); }
+
+.page { display:none; }
+.page.active { display:block; }
+
+.filterbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin: 12px 0 18px; }
+.select, .horizon { border:1px solid #eceaf6; background: #fff; border-radius: 12px; padding:8px 12px; }
+.horizon button { border:none; background:transparent; padding:8px 10px; cursor:pointer; color:#6c6c85;}
+.horizon button.active { color: var(--primary); font-weight: 600; text-decoration: underline; }
+
+.kpis { display:grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.kpi { background: var(--card-bg); border:1px solid #eceaf6; border-radius: 12px; padding: 12px; box-shadow: var(--shadow); }
+.kpi .name { font-size:12px; color: var(--muted); }
+.kpi .val { font-size: 20px; font-weight:700; margin-top: 6px;}
+.kpi .delta { font-size: 12px; margin-top: 4px; }
+
+.grid-2x2 { display:grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 14px; }
+.chart { background: var(--card-bg); border:1px solid #eceaf6; border-radius: 14px; padding: 12px; box-shadow: var(--shadow); display:flex; flex-direction:column; }
+.chart h4 { margin: 0 0 8px; font-size: 14px; color:#4b4f74; }
+
+.sidepanel { position: fixed; right: -420px; top: 0; width: 420px; height: 100%; background: #fff; box-shadow: -8px 0 30px rgba(0,0,0,0.12); padding: 24px; transition: right 0.2s ease; overflow:auto;}
+.sidepanel.open { right: 0; }
+.sidepanel h3 {margin-top:0;}
+
+.footer-note { margin-top:24px; color: var(--muted); font-size:12px; text-align:center;}
+.back { margin-top: 12px; }
+.btn { border:1px solid #eceaf6; border-radius: 10px; padding: 8px 12px; background:#fff; cursor:pointer; }
+.btn.primary { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; border-color: transparent; }
+.hidden { display:none; }
+
+.legend { font-size: 12px; color:#6b6f8c; margin-top:4px; display:flex; gap:12px; align-items:center; }
+.legend .swatch{ display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; }
+
+@media (max-width: 1100px) {
+ .cards { grid-template-columns: repeat(2, 1fr); }
+ .kpis { grid-template-columns: repeat(2, 1fr);}
+ .grid-2x2 { grid-template-columns: 1fr;}
+}
+</style>
+</head>
+<body>
+<div class="container" id="home">
+  <div class="header">
+    <div class="brand"><div class="logo" title="Place logo here in Sprint 2"></div><strong>Performance Hub</strong></div>
+    <div class="user">J</div>
+  </div>
+  <div class="hero">
+    <h1>Hi, Johan</h1>
+    <p>What would you like to know?</p>
+    <div class="search">
+      <div class="box">
+        <button class="btn-toggle active" id="mode-search">Search</button>
+        <button class="btn-toggle" id="mode-ask">Ask</button>
+        <input id="searchInput" placeholder="Search for anything..." />
+        <button class="go" id="goButton" title="Go">➚</button>
+      </div>
+    </div>
+  </div>
+  <div class="cards">
+    <div class="card" data-page="finance">
+      <div class="label">Domain</div><h3>Financial Performance</h3>
+      <canvas class="mini" id="mini-finance" height="72"></canvas>
+    </div>
+    <div class="card" data-page="delivery">
+      <div class="label">Domain</div><h3>Delivery & Operations</h3>
+      <canvas class="mini" id="mini-delivery" height="72"></canvas>
+    </div>
+    <div class="card" data-page="people">
+      <div class="label">Domain</div><h3>People & Talent</h3>
+      <canvas class="mini" id="mini-people" height="72"></canvas>
+    </div>
+    <div class="card" data-page="clients">
+      <div class="label">Domain</div><h3>Client Success</h3>
+      <canvas class="mini" id="mini-clients" height="72"></canvas>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab-chip active">For you</div>
+    <div class="tab-chip">Genie Spaces</div>
+    <div class="tab-chip">Domains</div>
+    <div class="tab-chip">Dashboards</div>
+    <div class="tab-chip">Apps</div>
+  </div>
+</div>
+
+<!-- Domain pages (unchanged content pulled from previous version) -->
+<div class="container page" id="page-finance">
+  <button class="btn back" data-back>← Back</button>
+  <h2>Financial Performance</h2>
+  <div class="filterbar">
+    <select class="select" id="fin-bu">
+      <option value="all" selected>All BUs</option>
+      <option value="Cloud">Cloud</option>
+      <option value="Data">Data</option>
+      <option value="Digital">Digital</option>
+    </select>
+    <select class="select" id="fin-country">
+      <option value="Nordics">Nordics</option>
+      <option value="SE">Sweden</option>
+      <option value="NO">Norway</option>
+      <option value="FI">Finland</option>
+      <option value="DK">Denmark</option>
+    </select>
+    <div class="horizon" id="fin-horizon">
+      Horizon:
+      <button data-h="3" class="active">3m</button>
+      <button data-h="6">6m</button>
+      <button data-h="12">12m</button>
+    </div>
+    <button class="btn" id="fin-explain">Explain variance</button>
+  </div>
+  <div class="kpis" id="fin-kpis"></div>
+  <div class="grid-2x2">
+    <div class="chart"><h4>Revenue Forecast vs Actuals</h4><canvas id="fin-rev" height="180"></canvas><div class="legend"><span><span class="swatch" style="background:var(--primary);"></span>Actual &amp; Forecast</span><span><span class="swatch" style="background:var(--accent);opacity:0.4;"></span>Confidence band</span></div></div>
+    <div class="chart"><h4>Profitability by Service Line</h4><canvas id="fin-margin" height="180"></canvas></div>
+    <div class="chart"><h4>Rolling 12-Month Growth</h4><canvas id="fin-grow" height="180"></canvas></div>
+    <div class="chart"><h4>Billing Rate Trend</h4><canvas id="fin-rate" height="180"></canvas></div>
+  </div>
+</div>
+
+<div class="container page" id="page-delivery">
+  <button class="btn back" data-back>← Back</button>
+  <h2>Delivery &amp; Operations</h2>
+  <div class="filterbar">
+    <select class="select" id="del-bu">
+      <option value="all" selected>All Teams</option>
+      <option value="Cloud">Cloud</option>
+      <option value="Data">Data</option>
+      <option value="Digital">Digital</option>
+    </select>
+    <div class="horizon" id="del-horizon">
+      Horizon:
+      <button data-h="6" class="active">6w</button>
+      <button data-h="12">12w</button>
+    </div>
+  </div>
+  <div class="kpis" id="del-kpis"></div>
+  <div class="grid-2x2">
+    <div class="chart"><h4>Utilization Heatmap (Forecast)</h4><canvas id="del-heat" height="200"></canvas></div>
+    <div class="chart"><h4>Bench Forecast</h4><canvas id="del-bench" height="180"></canvas></div>
+    <div class="chart"><h4>Resource Allocation</h4><canvas id="del-alloc" height="180"></canvas></div>
+    <div class="chart"><h4>On-Time Delivery %</h4><canvas id="del-otd" height="180"></canvas></div>
+  </div>
+</div>
+
+<div class="container page" id="page-people">
+  <button class="btn back" data-back>← Back</button>
+  <h2>People &amp; Talent</h2>
+  <div class="filterbar">
+    <select class="select" id="peo-bu">
+      <option value="all" selected>All BUs</option>
+      <option value="Cloud">Cloud</option>
+      <option value="Data">Data</option>
+      <option value="Digital">Digital</option>
+    </select>
+    <div class="horizon" id="peo-horizon">
+      Horizon:
+      <button data-h="6" class="active">6m</button>
+      <button data-h="12">12m</button>
+    </div>
+  </div>
+  <div class="kpis" id="peo-kpis"></div>
+  <div class="grid-2x2">
+    <div class="chart"><h4>Headcount Forecast vs Demand</h4><canvas id="peo-hc" height="180"></canvas><div class="legend"><span><span class="swatch" style="background:var(--primary);"></span>Headcount</span><span><span class="swatch" style="background:var(--primary-alt);"></span>Demand</span></div></div>
+    <div class="chart"><h4>Attrition Forecast</h4><canvas id="peo-attr" height="180"></canvas></div>
+    <div class="chart"><h4>Skills Coverage (Needed vs Available)</h4><canvas id="peo-skill" height="180"></canvas></div>
+    <div class="chart"><h4>Internal Mobility</h4><canvas id="peo-mob" height="180"></canvas></div>
+  </div>
+</div>
+
+<div class="container page" id="page-clients">
+  <button class="btn back" data-back>← Back</button>
+  <h2>Client Success</h2>
+  <div class="filterbar">
+    <select class="select" id="cli-tier">
+      <option value="all" selected>All Tiers</option>
+      <option value="A">Tier A</option>
+      <option value="B">Tier B</option>
+      <option value="C">Tier C</option>
+    </select>
+    <div class="horizon" id="cli-horizon">
+      Horizon:
+      <button data-h="6" class="active">6m</button>
+      <button data-h="12">12m</button>
+    </div>
+  </div>
+  <div class="kpis" id="cli-kpis"></div>
+  <div class="grid-2x2">
+    <div class="chart"><h4>Retention &amp; Churn Forecast</h4><canvas id="cli-ret" height="180"></canvas><div class="legend"><span><span class="swatch" style="background:var(--primary);"></span>Retention</span><span><span class="swatch" style="background:var(--primary-alt);"></span>Churn</span></div></div>
+    <div class="chart"><h4>Revenue by Client Cohort</h4><canvas id="cli-cohort" height="180"></canvas></div>
+    <div class="chart"><h4>Client Mix Treemap</h4><canvas id="cli-mix" height="180"></canvas></div>
+    <div class="chart"><h4>NPS vs Revenue Growth</h4><canvas id="cli-nps" height="180"></canvas></div>
+  </div>
+</div>
+
+<div class="sidepanel" id="panel">
+  <h3>Variance explanation</h3>
+  <div id="panel-content"></div>
+  <button class="btn" id="panel-close">Close</button>
+</div>
+
+<div class="footer-note">Sprint 0 canvas mockup • No real data • Style &amp; logos configurable in Sprint 2 via CSS variables and .logo slot.</div>
+
+<script>
+/* ---------- Utilities & data ---------- */
+function rand(seed){ let x = Math.sin(seed)*10000; return x - Math.floor(x); }
+function formatPct(n){return (n>=0?'+':'') + (n*100).toFixed(1)+'%';}
+function fmtCurrency(n){return '€' + (n/1e6).toFixed(1) + 'M';}
+
+function series(n, base, vol, trend=0, seed=1){
+  const a=[]; let v=base;
+  for(let i=0;i<n;i++){
+    v += (rand(seed+i)-0.5)*vol + trend;
+    a.push(Math.max(0, v));
+  }
+  return a;
+}
+function band(s, width){ return s.map(v => [Math.max(0, v*(1-width)), v*(1+width)]); }
+
+/* ---------- Canvas mini-chart engine ---------- */
+function drawGrid(ctx, pad, innerW, innerH){
+  ctx.strokeStyle = '#eceaf6'; ctx.lineWidth = 1;
+  for(let i=0;i<=4;i++){
+    const y = pad + i*(innerH/4);
+    ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(pad+innerW,y); ctx.stroke();
+  }
+}
+
+function drawLineChart(ctx, data, options={}){
+  const {w=ctx.canvas.width, h=ctx.canvas.height, yMax, yMin=0, bandData, grid=true, clear=true, color='#6b5b95', dash=[]} = options;
+  if (clear) ctx.clearRect(0,0,w,h);
+  const pad = 28;
+  const innerW = w - pad*2, innerH = h - pad*2;
+  const n = data.length;
+  const ymax = yMax ?? Math.max(...data)*1.2;
+  const ymin = yMin;
+  const sx = innerW/(n-1), sy = innerH/(ymax-ymin);
+  if (grid && clear) drawGrid(ctx, pad, innerW, innerH);
+  // band (only when clear)
+  if (bandData && clear){
+    ctx.fillStyle = 'rgba(140,120,210,0.18)';
+    ctx.beginPath();
+    bandData.forEach((b,i)=>{
+      const x = pad + i*sx;
+      const yLower = pad + innerH - (b[0]-ymin)*sy;
+      if(i===0) ctx.moveTo(x, yLower);
+      else ctx.lineTo(x, yLower);
+    });
+    for(let i=bandData.length-1;i>=0;i--){
+      const x = pad + i*sx;
+      const yUpper = pad + innerH - (bandData[i][1]-ymin)*sy;
+      ctx.lineTo(x, yUpper);
+    }
+    ctx.closePath(); ctx.fill();
+  }
+  // line
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash(dash);
+  ctx.beginPath();
+  data.forEach((v,i)=>{
+    const x = pad + i*sx;
+    const y = pad + innerH - (v - ymin)*sy;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.stroke(); ctx.setLineDash([]);
+}
+
+function drawBars(ctx, data, options={}){
+  const {w=ctx.canvas.width, h=ctx.canvas.height, yMax, yMin=0, color='#b492f0'} = options;
+  ctx.clearRect(0,0,w,h);
+  const pad=28, innerW=w-pad*2, innerH=h-pad*2;
+  const ymax = yMax ?? Math.max(...data)*1.2;
+  const ymin = yMin;
+  const n = data.length;
+  const bw = innerW/n * 0.7;
+  drawGrid(ctx, pad, innerW, innerH);
+  ctx.fillStyle = color;
+  data.forEach((v,i)=>{
+    const x = pad + i*(innerW/n) + (innerW/n - bw)/2;
+    const y = pad + innerH - (v - ymin) * (innerH / (ymax-ymin));
+    const hgt = pad + innerH - y;
+    ctx.fillRect(x, y, bw, hgt);
+  });
+}
+
+function drawArea(ctx, data, options={}){
+  const {w=ctx.canvas.width, h=ctx.canvas.height, yMax, yMin=0, colorFill='rgba(180,146,240,0.35)', colorLine='#6b5b95'} = options;
+  ctx.clearRect(0,0,w,h);
+  const pad=28, innerW=w-pad*2, innerH=h-pad*2;
+  const ymax = yMax ?? Math.max(...data)*1.2;
+  const ymin = yMin;
+  const n = data.length;
+  const sx = innerW/(n-1), sy = innerH/(ymax-ymin);
+  drawGrid(ctx, pad, innerW, innerH);
+  ctx.fillStyle = colorFill;
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const v = data[i];
+    const x = pad + i*sx;
+    const y = pad + innerH - (v - ymin)*sy;
+    if(i===0) ctx.moveTo(x, pad+innerH);
+    ctx.lineTo(x,y);
+  }
+  ctx.lineTo(pad+innerW, pad+innerH); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle=colorLine; ctx.lineWidth=1.5;
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const v = data[i];
+    const x = pad + i*sx; const y = pad + innerH - (v - ymin)* sy;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+}
+
+function drawHeatmap(ctx, grid, options={}){
+  const {w=ctx.canvas.width, h=ctx.canvas.height, min=0, max=100} = options;
+  ctx.clearRect(0,0,w,h);
+  const rows = grid.length, cols = grid[0].length;
+  const pad=28, innerW=w-pad*2, innerH=h-pad*2;
+  const cw = innerW/cols, ch = innerH/rows;
+  // draw cells
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const v = grid[r][c];
+      const t = (v-min)/(max-min);
+      const col = `rgba(107,91,149,${0.08 + t*0.6})`;
+      ctx.fillStyle = col;
+      ctx.fillRect(pad + c*cw, pad + r*ch, cw-1, ch-1);
+      // value
+      ctx.fillStyle = '#4b4f74';
+      ctx.font='10px system-ui';
+      ctx.globalAlpha=0.7;
+      ctx.fillText(Math.round(v)+'%', pad + c*cw + 4, pad + r*ch + 12);
+      ctx.globalAlpha=1;
+    }
+  }
+  // outer grid
+  ctx.strokeStyle='#eceaf6'; ctx.lineWidth=1;
+  for(let i=0;i<=rows;i++){
+    const y = pad + i*ch; ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(pad+innerW, y); ctx.stroke();
+  }
+  for(let j=0;j<=cols;j++){
+    const x = pad + j*cw; ctx.beginPath(); ctx.moveTo(x, pad); ctx.lineTo(x, pad+innerH); ctx.stroke();
+  }
+}
+
+function drawGroupedBars(ctx, seriesList, options={}){
+  const {labels=Array.from({length:seriesList[0].length}, (_,i)=>i+1), colors=['#6b5b95','#88a1ff'], yMin=0, yMax} = options;
+  const w=ctx.canvas.width, h=ctx.canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const pad=28, innerW=w-pad*2, innerH=h-pad*2;
+  const ymax = yMax ?? Math.max(...seriesList.flat())*1.2;
+  const groupCount = labels.length;
+  const groupW = innerW/groupCount;
+  const barW = groupW/(seriesList.length+1);
+  drawGrid(ctx, pad, innerW, innerH);
+  seriesList.forEach((series, si)=>{
+    ctx.fillStyle = colors[si%colors.length];
+    series.forEach((v, i)=>{
+      const x = pad + i*groupW + (si+0.2)*barW;
+      const y = pad + innerH - (v-yMin)*(innerH/(ymax-yMin));
+      const hgt = pad + innerH - y;
+      ctx.fillRect(x,y,barW*0.8,hgt);
+    });
+  });
+}
+
+/* ---------- App state ---------- */
+const App = {
+  mode: 'search', // or 'ask'
+  page: 'home',
+  data: {
+    finance(h=3){
+      return {
+        kpis: [
+          {name:'Revenue (YTD)', val: fmtCurrency(92e6), delta:'+6.2% vs plan'},
+          {name:'Gross Margin %', val:'31.4%', delta:'+1.2pp'},
+          {name:'Revenue / Consultant', val:'€198k', delta:'+3.1%'},
+          {name:'Average Billing Rate', val:'€118/h', delta:'+1.5%'},
+          {name:'Pipeline Coverage (90d)', val:'1.3×', delta:'-0.1×'}
+        ],
+        revActual: series(12, 18, 3, 0.4, 7),
+        revForecast: series(h, 25, 2, 0.6, 8),
+        revBand: band(series(h, 25, 2, 0.6, 8), 0.15),
+        margin: [28,30,31,29,33,32,30,31,32,33,35,34],
+        growth: [3,4,5,6,4,3,5,7,6,8,7,6],
+        rate: [110,112,111,113,115,116,118,119,120,118,119,121]
+      }
+    },
+    delivery(weeks=6){
+      const utilGrid = Array.from({length:3}, (_,r)=>Array.from({length:weeks}, (_,c)=> 70 + Math.round( (rand(r*10+c)*30-10) )));
+      return {
+        kpis: [
+          {name:'Utilization', val:'78.4%', delta:'+2.3pp'},
+          {name:'Bench %', val:'6.8%', delta:'-0.9pp'},
+          {name:'Overrun Rate', val:'12.5%', delta:'-1.2pp'},
+          {name:'On-Time Delivery', val:'92.0%', delta:'+0.8pp'},
+          {name:'Avg Project Duration', val:'14.2w', delta:'-0.4w'},
+        ],
+        heat: utilGrid,
+        bench: series(weeks, 8, 1.2, -0.05, 21).map(v=>Math.max(2, 12 - v)), // pseudo decreasing
+        alloc: series(weeks, 100, 20, 2, 13),
+        otd: series(weeks, 89, 2, 0.3, 17)
+      }
+    },
+    people(h=6){
+      return {
+        kpis: [
+          {name:'Headcount', val:'3,980', delta:'+25 MoM'},
+          {name:'Attrition', val:'12.2%', delta:'-0.4pp'},
+          {name:'Time to Staff', val:'6.1d', delta:'-0.3d'},
+          {name:'Training Hours / FTE', val:'3.8h', delta:'+0.5h'},
+          {name:'Certification Rate', val:'41%', delta:'+2pp'},
+        ],
+        hc: series(h, 3800, 25, 10, 31),
+        demand: series(h, 3850, 25, 8, 32),
+        attr: series(h, 10, 1.5, -0.05, 33),
+        skillNeed: [100,120,140,100,90,80,130,110],
+        skillHave: [95,110,120,92,88,85,120,108],
+        mobility: [20,24,22,28,32,30,34,38,36,40,42,45]
+      }
+    },
+    clients(h=6){
+      return {
+        kpis: [
+          {name:'NPS', val:'55', delta:'+3'},
+          {name:'Repeat Business', val:'68%', delta:'+1pp'},
+          {name:'Top-5 Concentration', val:'41%', delta:'-2pp'},
+          {name:'Avg Deal Size', val:'€186k', delta:'+4.4%'},
+          {name:'Churn Probability', val:'6.1%', delta:'-0.6pp'},
+        ],
+        retention: series(h, 94, 2, -0.2, 41),
+        churn: series(h, 7, 1.2, -0.05, 42),
+        cohort: series(12, 2.5, 0.8, 0.2, 43),
+        mix: Array.from({length:10},()=> Math.max(0.05, rand(Math.random())) ),
+        nps: series(12, 50, 8, 0.2, 44),
+        revGrowth: series(12, 0, 2, 0.5, 45)
+      }
+    }
+  }
+};
+
+/* ---------- Navigation ---------- */
+const home = document.getElementById('home');
+document.querySelectorAll('.card').forEach(card=>{
+  card.addEventListener('click', ()=>{
+    showPage(card.dataset.page);
+  });
+});
+document.querySelectorAll('[data-back]').forEach(b=>b.addEventListener('click', ()=>showPage('home')));
+
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  if(name==='home'){ home.style.display='block'; }
+  else{ home.style.display='none'; document.getElementById('page-'+name).classList.add('active'); }
+  App.page = name;
+  if(name==='finance') renderFinance();
+  if(name==='delivery') renderDelivery();
+  if(name==='people') renderPeople();
+  if(name==='clients') renderClients();
+}
+showPage('home');
+
+/* ---------- Search & Ask ---------- */
+const modeSearch = document.getElementById('mode-search');
+const modeAsk = document.getElementById('mode-ask');
+modeSearch.addEventListener('click', ()=>{App.mode='search'; modeSearch.classList.add('active'); modeAsk.classList.remove('active');});
+modeAsk.addEventListener('click', ()=>{App.mode='ask'; modeAsk.classList.add('active'); modeSearch.classList.remove('active');});
+document.getElementById('goButton').addEventListener('click', runQuery);
+document.getElementById('searchInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') runQuery(); });
+
+function runQuery(){
+  const q = document.getElementById('searchInput').value.trim();
+  const panel = document.getElementById('panel');
+  const content = document.getElementById('panel-content');
+  if(App.mode==='search'){
+    content.innerHTML = '<strong>Search results (mock)</strong><ul><li>Dashboard: Financial Performance</li><li>Project: Cloud Migration Alfa</li><li>Client: Contoso AB</li><li>Doc: Rate Card FY25</li></ul>';
+  } else {
+    content.innerHTML = '<strong>Answer (mock)</strong><p>Margin dipped 0.8pp in May due to lower utilization in Data BU (-3.1pp) and higher subcontractor mix (+2.4pp). Recovery expected in 6–8 weeks as pipeline converts (1.3× coverage).</p>';
+  }
+  panel.classList.add('open');
+}
+document.getElementById('panel-close').addEventListener('click', ()=>document.getElementById('panel').classList.remove('open'));
+
+/* ---------- Renderers ---------- */
+// Home mini-charts
+function renderHomeMinis(){
+  // Finance: area sparkline with band
+  const fctx = document.getElementById('mini-finance').getContext('2d');
+  const f = App.data.finance(3);
+  drawLineChart(fctx, f.revActual.slice(-8).concat(f.revForecast.slice(0,2)), {yMin:0, color:getComputedStyle(document.documentElement).getPropertyValue('--primary')});
+  // Delivery: utilization sparkline
+  const dctx = document.getElementById('mini-delivery').getContext('2d');
+  const d = App.data.delivery(12);
+  const utilAvg = d.heat.map(row => row.map(v=>v)).flat().slice(-12);
+  drawLineChart(dctx, utilAvg.map((_,i)=> 80 + (Math.sin(i/2)*5) + (Math.random()*2-1)), {yMin:70, yMax:95});
+  // People: dual-line headcount vs demand
+  const pctx = document.getElementById('mini-people').getContext('2d');
+  const p = App.data.people(8);
+  drawLineChart(pctx, p.hc, {yMin:3600, color:getComputedStyle(document.documentElement).getPropertyValue('--primary')});
+  drawLineChart(pctx, p.demand, {yMin:3600, clear:false, grid:false, color:getComputedStyle(document.documentElement).getPropertyValue('--primary-alt'), dash:[4,4]});
+  // Clients: retention line
+  const cctx = document.getElementById('mini-clients').getContext('2d');
+  const c = App.data.clients(8);
+  drawLineChart(cctx, c.retention, {yMin:80, yMax:100, color:getComputedStyle(document.documentElement).getPropertyValue('--primary')});
+}
+renderHomeMinis();
+
+// Finance
+function renderFinance(){
+  const horizon = +document.querySelector('#fin-horizon .active').dataset.h;
+  const D = App.data.finance(horizon);
+  const k = document.getElementById('fin-kpis');
+  k.innerHTML = '';
+  D.kpis.forEach((i)=>{
+    const el = document.createElement('div'); el.className='kpi';
+    el.innerHTML = '<div class="name">'+i.name+'</div><div class="val">'+i.val+'</div><div class="delta">'+i.delta+'</div>';
+    el.addEventListener('click', ()=>{
+      document.getElementById('panel-content').innerHTML = '<strong>'+i.name+'</strong><p>Quick insight (mock): metric is trending within target range. Click “Explain variance” for drivers.</p>';
+      document.getElementById('panel').classList.add('open');
+    });
+    k.appendChild(el);
+  });
+  const rev = D.revActual.concat(D.revForecast);
+  const bandData = (D.revActual.map(v=>[v,v])).concat(D.revBand);
+  drawLineChart(document.getElementById('fin-rev').getContext('2d'), rev, {bandData, yMin:0, color:getComputedStyle(document.documentElement).getPropertyValue('--primary')});
+  drawBars(document.getElementById('fin-margin').getContext('2d'), D.margin, {});
+  drawBars(document.getElementById('fin-grow').getContext('2d'), D.growth, {});
+  drawLineChart(document.getElementById('fin-rate').getContext('2d'), D.rate, {});
+  document.getElementById('fin-explain').onclick = ()=>{
+    document.getElementById('panel-content').innerHTML = `
+    <strong>Revenue variance drivers (mock)</strong>
+    <ul>
+      <li><b>Utilization</b>: +1.9pp vs plan, adds €1.2M</li>
+      <li><b>Rate mix</b>: -€0.4M from discounting in two accounts</li>
+      <li><b>Service mix</b>: +€0.6M from Cloud projects</li>
+    </ul>
+    <p>Actions: tighten discount approvals, accelerate two Data deals, reassign 8 consultants from bench.</p>`;
+    document.getElementById('panel').classList.add('open');
+  };
+}
+document.querySelectorAll('#fin-horizon button').forEach(b=> b.addEventListener('click', ()=>{ document.querySelectorAll('#fin-horizon button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderFinance(); }));
+
+// Delivery
+function renderDelivery(){
+  const horizon = +document.querySelector('#del-horizon .active').dataset.h;
+  const D = App.data.delivery(horizon);
+  const k = document.getElementById('del-kpis'); k.innerHTML='';
+  D.kpis.forEach(i=>{
+    const el = document.createElement('div'); el.className='kpi';
+    el.innerHTML = '<div class="name">'+i.name+'</div><div class="val">'+i.val+'</div><div class="delta">'+i.delta+'</div>';
+    k.appendChild(el);
+  });
+  drawHeatmap(document.getElementById('del-heat').getContext('2d'), D.heat, {min:60, max:95});
+  drawLineChart(document.getElementById('del-bench').getContext('2d'), D.bench, {yMin:0});
+  drawArea(document.getElementById('del-alloc').getContext('2d'), D.alloc, {yMin:0});
+  drawLineChart(document.getElementById('del-otd').getContext('2d'), D.otd, {yMin:80, yMax:100});
+}
+document.querySelectorAll('#del-horizon button').forEach(b=> b.addEventListener('click', ()=>{ document.querySelectorAll('#del-horizon button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderDelivery(); }));
+
+// People
+function renderPeople(){
+  const horizon = +document.querySelector('#peo-horizon .active').dataset.h;
+  const D = App.data.people(horizon);
+  const k = document.getElementById('peo-kpis'); k.innerHTML='';
+  D.kpis.forEach(i=>{ const el=document.createElement('div'); el.className='kpi'; el.innerHTML = '<div class="name">'+i.name+'</div><div class="val">'+i.val+'</div><div class="delta">'+i.delta+'</div>'; k.appendChild(el); });
+  const ctxHC = document.getElementById('peo-hc').getContext('2d');
+  drawLineChart(ctxHC, D.hc, {yMin:3600, color:getComputedStyle(document.documentElement).getPropertyValue('--primary')});
+  drawLineChart(ctxHC, D.demand, {yMin:3600, clear:false, grid:false, color:getComputedStyle(document.documentElement).getPropertyValue('--primary-alt'), dash:[4,4]});
+  drawLineChart(document.getElementById('peo-attr').getContext('2d'), D.attr, {yMin:6, yMax:16});
+  drawGroupedBars(document.getElementById('peo-skill').getContext('2d'), [D.skillNeed, D.skillHave], {labels:['Cloud','Data','AI','Dev','QA','PM','Sec','UX']});
+  drawBars(document.getElementById('peo-mob').getContext('2d'), D.mobility, {yMin:0});
+}
+document.querySelectorAll('#peo-horizon button').forEach(b=> b.addEventListener('click', ()=>{ document.querySelectorAll('#peo-horizon button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderPeople(); }));
+
+// Clients
+function renderClients(){
+  const horizon = +document.querySelector('#cli-horizon .active').dataset.h;
+  const D = App.data.clients(horizon);
+  const k = document.getElementById('cli-kpis'); k.innerHTML='';
+  D.kpis.forEach(i=>{ const el=document.createElement('div'); el.className='kpi'; el.innerHTML = '<div class="name">'+i.name+'</div><div class="val">'+i.val+'</div><div class="delta">'+i.delta+'</div>'; k.appendChild(el); });
+  const ctxR = document.getElementById('cli-ret').getContext('2d');
+  drawLineChart(ctxR, D.retention, {yMin:80, yMax:100, color:getComputedStyle(document.documentElement).getPropertyValue('--primary')});
+  drawLineChart(ctxR, D.churn.map(x=>100-x), {yMin:80, yMax:100, clear:false, grid:false, color:getComputedStyle(document.documentElement).getPropertyValue('--primary-alt'), dash:[5,3]});
+  drawBars(document.getElementById('cli-cohort').getContext('2d'), D.cohort, {yMin:0});
+  // simple row treemap
+  const ctxT = document.getElementById('cli-mix').getContext('2d');
+  (function drawTreemap(values){
+    const w = ctxT.canvas.width, h = ctxT.canvas.height; ctxT.clearRect(0,0,w,h);
+    const pad=16; let x=pad, y=pad; const innerW=w-pad*2, innerH=h-pad*2;
+    const total = values.reduce((a,b)=>a+b,0);
+    let rowH = innerH/3; let row = 0;
+    values.forEach((v,i)=>{
+      const wFrac = (v/total)*innerW;
+      ctxT.fillStyle = `rgba(107,91,149,${0.25 + 0.6*(v/Math.max(...values))})`;
+      ctxT.fillRect(x,y,wFrac-4,rowH-4);
+      ctxT.fillStyle = '#4b4f74'; ctxT.font='12px system-ui'; ctxT.fillText('Client '+(i+1), x+6, y+16);
+      x += wFrac;
+      if (x > pad + innerW*0.95){ x = pad; row++; y = pad + row*rowH; }
+    });
+  })(D.mix);
+  const ctxN = document.getElementById('cli-nps').getContext('2d');
+  drawLineChart(ctxN, D.nps, {yMin:0, yMax:100, color:getComputedStyle(document.documentElement).getPropertyValue('--primary')});
+  drawLineChart(ctxN, D.revGrowth.map(v=>v*10+50), {yMin:0, yMax:100, clear:false, grid:false, color:getComputedStyle(document.documentElement).getPropertyValue('--primary-alt'), dash:[4,4]});
+}
+document.querySelectorAll('#cli-horizon button').forEach(b=> b.addEventListener('click', ()=>{ document.querySelectorAll('#cli-horizon button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderClients(); }));
+</script>
+</body>
+</html>
