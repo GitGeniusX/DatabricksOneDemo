@@ -14,100 +14,179 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div id="app">
-        <!-- Navigation Header -->
-        <header class="navigation-header">
-            <div class="nav-left">
-                <div class="logo">
-                    <img src="assets/icons/knowit-logo.svg" alt="Knowit" class="logo-image">
-                </div>
-                <div class="global-search">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search metrics, projects, clients..." id="global-search-input">
-                </div>
-            </div>
-            <div class="nav-right">
-                <div class="notification-bell">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-badge">3</span>
-                </div>
-                <div class="user-profile">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiMxZjQ3ODgiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Im04IDhoLTIgMnYyaDJ2LTJ6bTAtNGgtMnYyaDJ2LTJ6IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+" alt="User Avatar">
-                    <span class="user-name">Johan</span>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Container -->
-        <div class="main-container">
-            <!-- Side Navigation -->
-            <nav class="side-navigation" id="side-nav">
-                <div class="nav-menu">
-                    <div class="nav-item active" data-page="home">
-                        <i class="fas fa-home"></i>
-                        <span>Home</span>
-                    </div>
-                    <div class="nav-item" data-page="financial">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Financial Performance</span>
-                    </div>
-                    <div class="nav-item" data-page="delivery">
-                        <i class="fas fa-tasks"></i>
-                        <span>Delivery & Operations</span>
-                    </div>
-                    <div class="nav-item" data-page="people">
-                        <i class="fas fa-users"></i>
-                        <span>People & Talent</span>
-                    </div>
-                    <div class="nav-item" data-page="client">
-                        <i class="fas fa-handshake"></i>
-                        <span>Client Success</span>
-                    </div>
-                    <div class="nav-item" data-page="strategic">
-                        <i class="fas fa-chess"></i>
-                        <span>Strategic / Board</span>
-                    </div>
-                    <div class="nav-separator"></div>
-                    <div class="nav-item" data-page="search">
-                        <i class="fas fa-search"></i>
-                        <span>Search</span>
-                    </div>
-                    <div class="nav-item" data-page="ask">
-                        <i class="fas fa-comment-dots"></i>
-                        <span>Ask AI</span>
-                    </div>
-                </div>
-            </nav>
-
-            <!-- Main Content Area -->
-            <main class="main-content" id="main-content">
-                <!-- Breadcrumb Navigation -->
-                <div class="breadcrumb-nav" id="breadcrumb">
-                    <span class="breadcrumb-item active">Home</span>
-                </div>
-
-                <!-- Content Area -->
-                <div class="content-area" id="content-area">
-                    <!-- Content will be dynamically loaded here -->
-                </div>
-            </main>
-        </div>
+<div class="container" id="home">
+  <div class="header">
+    <div class="brand">
+      <img src="assets/icons/Logotype-Knowit-Digital-Black.svg" alt="Knowit" class="logo" />
+      <strong>Performance Hub</strong>
     </div>
-
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loading-overlay">
-        <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-            <span>Loading...</span>
-        </div>
+    <div class="user">J</div>
+  </div>
+  <div class="hero">
+    <h1>Hi, Johan</h1>
+    <p>What would you like to know?</p>
+    <div class="search">
+      <div class="box">
+        <button class="btn-toggle" id="mode-search">Search</button>
+        <button class="btn-toggle active" id="mode-ask">Ask AI</button>
+        <input id="searchInput" placeholder="Ask me anything about your data..." />
+        <button class="go" id="goButton" title="Go">✈️</button>
+      </div>
     </div>
+  </div>
+  <div class="cards">
+    <div class="card" data-page="finance">
+      <div class="label">Domain</div><h3>Financial Performance</h3>
+      <canvas class="mini" id="mini-finance" height="72"></canvas>
+    </div>
+    <div class="card" data-page="delivery">
+      <div class="label">Domain</div><h3>Delivery & Operations</h3>
+      <canvas class="mini" id="mini-delivery" height="72"></canvas>
+    </div>
+    <div class="card" data-page="people">
+      <div class="label">Domain</div><h3>People & Talent</h3>
+      <canvas class="mini" id="mini-people" height="72"></canvas>
+    </div>
+    <div class="card" data-page="clients">
+      <div class="label">Domain</div><h3>Client Success</h3>
+      <canvas class="mini" id="mini-clients" height="72"></canvas>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab-chip active">For you</div>
+    <div class="tab-chip">Genie Spaces</div>
+    <div class="tab-chip">Domains</div>
+    <div class="tab-chip">Dashboards</div>
+    <div class="tab-chip">Apps</div>
+  </div>
+</div>
 
-    <!-- Scripts -->
-    <script src="js/data.js"></script>
-    <script src="js/charts.js"></script>
-    <script src="js/navigation.js"></script>
-    <script src="js/interactions.js"></script>
-    <script src="js/app.js"></script>
+<!-- Domain pages -->
+<div class="container page" id="page-finance">
+  <button class="btn back" data-back>← Back</button>
+  <h2>Financial Performance</h2>
+  <div class="filterbar">
+    <select class="select" id="fin-bu">
+      <option value="all" selected>All BUs</option>
+      <option value="Solutions">Solutions</option>
+      <option value="Experience">Experience</option>
+      <option value="Insight">Insight</option>
+      <option value="Connectivity">Connectivity</option>
+    </select>
+    <select class="select" id="fin-country">
+      <option value="Nordics">Nordics</option>
+      <option value="SE">Sweden</option>
+      <option value="NO">Norway</option>
+      <option value="FI">Finland</option>
+      <option value="DK">Denmark</option>
+    </select>
+    <div class="horizon" id="fin-horizon">
+      Horizon:
+      <button data-h="3" class="active">3m</button>
+      <button data-h="6">6m</button>
+      <button data-h="12">12m</button>
+    </div>
+    <button class="btn" id="fin-explain">Explain variance</button>
+  </div>
+  <div class="kpis" id="fin-kpis"></div>
+  <div class="grid-2x2">
+    <div class="chart"><h4>Revenue Forecast vs Actuals</h4><canvas id="fin-rev" height="180"></canvas><div class="legend"><span><span class="swatch" style="background:var(--primary);"></span>Actual &amp; Forecast</span><span><span class="swatch" style="background:var(--accent);opacity:0.4;"></span>Confidence band</span></div></div>
+    <div class="chart"><h4>Profitability by Service Line</h4><canvas id="fin-margin" height="180"></canvas></div>
+    <div class="chart"><h4>Rolling 12-Month Growth</h4><canvas id="fin-grow" height="180"></canvas></div>
+    <div class="chart"><h4>Billing Rate Trend</h4><canvas id="fin-rate" height="180"></canvas></div>
+  </div>
+</div>
+
+<div class="container page" id="page-delivery">
+  <button class="btn back" data-back>← Back</button>
+  <h2>Delivery &amp; Operations</h2>
+  <div class="filterbar">
+    <select class="select" id="del-bu">
+      <option value="all" selected>All Teams</option>
+      <option value="Solutions">Solutions</option>
+      <option value="Experience">Experience</option>
+      <option value="Insight">Insight</option>
+      <option value="Connectivity">Connectivity</option>
+    </select>
+    <div class="horizon" id="del-horizon">
+      Horizon:
+      <button data-h="6" class="active">6w</button>
+      <button data-h="12">12w</button>
+    </div>
+  </div>
+  <div class="kpis" id="del-kpis"></div>
+  <div class="grid-2x2">
+    <div class="chart"><h4>Utilization Heatmap (Forecast)</h4><canvas id="del-heat" height="200"></canvas></div>
+    <div class="chart"><h4>Bench Forecast</h4><canvas id="del-bench" height="180"></canvas></div>
+    <div class="chart"><h4>Resource Allocation</h4><canvas id="del-alloc" height="180"></canvas></div>
+    <div class="chart"><h4>On-Time Delivery %</h4><canvas id="del-otd" height="180"></canvas></div>
+  </div>
+</div>
+
+<div class="container page" id="page-people">
+  <button class="btn back" data-back>← Back</button>
+  <h2>People &amp; Talent</h2>
+  <div class="filterbar">
+    <select class="select" id="peo-bu">
+      <option value="all" selected>All BUs</option>
+      <option value="Solutions">Solutions</option>
+      <option value="Experience">Experience</option>
+      <option value="Insight">Insight</option>
+      <option value="Connectivity">Connectivity</option>
+    </select>
+    <div class="horizon" id="peo-horizon">
+      Horizon:
+      <button data-h="6" class="active">6m</button>
+      <button data-h="12">12m</button>
+    </div>
+  </div>
+  <div class="kpis" id="peo-kpis"></div>
+  <div class="grid-2x2">
+    <div class="chart"><h4>Headcount Forecast vs Demand</h4><canvas id="peo-hc" height="180"></canvas><div class="legend"><span><span class="swatch" style="background:var(--primary);"></span>Headcount</span><span><span class="swatch" style="background:var(--primary-alt);"></span>Demand</span></div></div>
+    <div class="chart"><h4>Attrition Forecast</h4><canvas id="peo-attr" height="180"></canvas></div>
+    <div class="chart"><h4>Skills Coverage (Needed vs Available)</h4><canvas id="peo-skill" height="180"></canvas></div>
+    <div class="chart"><h4>Internal Mobility</h4><canvas id="peo-mob" height="180"></canvas></div>
+  </div>
+</div>
+
+<div class="container page" id="page-clients">
+  <button class="btn back" data-back>← Back</button>
+  <h2>Client Success</h2>
+  <div class="filterbar">
+    <select class="select" id="cli-tier">
+      <option value="all" selected>All Tiers</option>
+      <option value="A">Tier A</option>
+      <option value="B">Tier B</option>
+      <option value="C">Tier C</option>
+    </select>
+    <div class="horizon" id="cli-horizon">
+      Horizon:
+      <button data-h="6" class="active">6m</button>
+      <button data-h="12">12m</button>
+    </div>
+  </div>
+  <div class="kpis" id="cli-kpis"></div>
+  <div class="grid-2x2">
+    <div class="chart"><h4>Retention &amp; Churn Forecast</h4><canvas id="cli-ret" height="180"></canvas><div class="legend"><span><span class="swatch" style="background:var(--primary);"></span>Retention</span><span><span class="swatch" style="background:var(--primary-alt);"></span>Churn</span></div></div>
+    <div class="chart"><h4>Revenue by Client Cohort</h4><canvas id="cli-cohort" height="180"></canvas></div>
+    <div class="chart"><h4>Client Mix Treemap</h4><canvas id="cli-mix" height="180"></canvas></div>
+    <div class="chart"><h4>NPS vs Revenue Growth</h4><canvas id="cli-nps" height="180"></canvas></div>
+  </div>
+</div>
+
+<div class="sidepanel" id="panel">
+  <h3>Variance explanation</h3>
+  <div id="panel-content"></div>
+  <button class="btn" id="panel-close">Close</button>
+</div>
+
+<div class="footer-note">Sprint 0 canvas mockup • No real data • Style &amp; logos configurable in Sprint 2 via CSS variables and .logo slot.</div>
+
+<!-- Scripts -->
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/navigation.js"></script>
+<script src="js/interactions.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

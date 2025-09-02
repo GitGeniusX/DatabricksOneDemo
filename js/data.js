@@ -180,7 +180,7 @@ class MockDataService {
           },
           {
             id: 'digital-projects',
-            title: 'Digital Project %',
+            title: 'Innovation Project %',
             value: '35%',
             change: 8.1,
             changeType: 'positive',
@@ -195,7 +195,7 @@ class MockDataService {
       },
       filters: {
         timeRanges: ['3m', '6m', '12m'],
-        businessUnits: ['all', 'solutions', 'experience', 'connectivity', 'insight'],
+        businessUnits: ['all', 'solutions', 'experience', 'insight', 'connectivity'],
         countries: ['all', 'sweden', 'norway', 'denmark', 'finland', 'poland'],
         serviceLines: ['advisory', 'implementation', 'support'],
         clientTiers: ['enterprise', 'mid-market', 'smb']
@@ -389,7 +389,7 @@ class MockDataService {
   // Generate mock breakdown data
   generateBreakdownData() {
     return {
-      labels: ['Cloud', 'Digital', 'Analytics', 'Strategy'],
+      labels: ['Solutions', 'Experience', 'Insight', 'Connectivity'],
       datasets: [
         {
           label: 'Q4 2024',
@@ -442,7 +442,7 @@ class MockDataService {
       projects: [
         {
           title: 'Digital Transformation - TechCorp',
-          description: 'Cloud migration project, €450K budget, 85% complete',
+          description: 'Experience transformation project, €450K budget, 85% complete',
           type: 'project'
         },
         {
@@ -466,7 +466,7 @@ class MockDataService {
       people: [
         {
           title: 'Sarah Johnson',
-          description: 'Senior Consultant, Cloud specialist, 92% utilization',
+          description: 'Senior Consultant, Solutions specialist, 92% utilization',
           type: 'consultant'
         },
         {
@@ -497,7 +497,7 @@ class MockDataService {
         question: "Why did margin drop last month?",
         summary: [
           "Gross margin decreased by 2.1% primarily due to increased delivery costs",
-          "Cloud BU experienced higher than expected implementation complexity",
+          "Experience BU experienced higher than expected implementation complexity",
           "Rate realization was impacted by competitive pricing pressures",
           "Bench costs increased due to delayed project starts"
         ],
@@ -542,7 +542,7 @@ class MockDataService {
         question: "Show top performers by utilization",
         summary: [
           "Top 10 consultants by utilization (12-month average)",
-          "Sarah Johnson leads with 96% utilization (Cloud specialist)",
+          "Sarah Johnson leads with 96% utilization (Solutions specialist)",
           "Erik Andersson: 94% utilization (Analytics practice)",
           "Average top-10 utilization: 91% vs company average 82%"
         ],

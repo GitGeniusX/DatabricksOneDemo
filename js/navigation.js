@@ -1,46 +1,6 @@
-// ======================================
-// Navigation System
-// ======================================
-
-class NavigationManager {
-  constructor() {
-    this.currentPage = 'home';
-    this.breadcrumb = ['Home'];
-    this.init();
-  }
-
-  init() {
-    this.setupEventListeners();
-    this.loadInitialPage();
-    this.setupMobileMenu();
-  }
-
-  setupEventListeners() {
-    // Navigation menu items
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.addEventListener('click', (e) => {
-        const page = e.currentTarget.dataset.page;
-        this.navigateTo(page);
-      });
-    });
-
-    // Handle browser back/forward
-    window.addEventListener('popstate', (e) => {
-      if (e.state && e.state.page) {
-        this.navigateTo(e.state.page, false);
-      }
-    });
-
-    // Global search
-    const globalSearch = document.getElementById('global-search-input');
-    if (globalSearch) {
-      globalSearch.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          this.handleGlobalSearch(e.target.value);
-        }
-      });
-    }
-  }
+// Navigation functionality handled in app.js for this Sprint 0 version
+// This file is kept for compatibility but functionality moved to app.js
+console.log('Navigation module loaded - functionality in app.js');
 
   setupMobileMenu() {
     // Add mobile menu toggle if screen is small
@@ -698,10 +658,10 @@ const pageTemplates = {
           <label class="filter-label">Business Unit</label>
           <select class="filter-select" data-filter="businessUnit">
             <option value="all" selected>All Units</option>
-            <option value="cloud">Cloud</option>
-            <option value="digital">Digital</option>
-            <option value="analytics">Analytics</option>
-            <option value="strategy">Strategy</option>
+            <option value="solutions">Solutions</option>
+            <option value="experience">Experience</option>
+            <option value="insight">Insight</option>
+            <option value="connectivity">Connectivity</option>
           </select>
         </div>
         <div class="filter-group">

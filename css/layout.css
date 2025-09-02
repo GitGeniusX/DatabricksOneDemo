@@ -45,13 +45,10 @@
 
 /* Logo */
 .logo {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--primary-blue);
-  text-decoration: none;
+  height: 32px;
+  width: auto;
+  max-width: 120px;
+  object-fit: contain;
 }
 
 .logo i {
@@ -61,8 +58,7 @@
 .logo-image {
   height: 32px;
   width: auto;
-  /* Convert white/cream logo to dark blue to match our primary color */
-  filter: brightness(0) saturate(100%) invert(27%) sepia(42%) saturate(1822%) hue-rotate(203deg) brightness(92%) contrast(96%);
+  /* Updated for proper Knowit branding */
 }
 
 /* Global Search */

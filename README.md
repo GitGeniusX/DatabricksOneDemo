@@ -58,7 +58,7 @@ Each domain includes:
 
 ### Filters
 - **Time Range**: 3M, 6M, 12M options
-- **Business Unit**: All, Cloud, Digital, Analytics, Strategy
+- **Business Unit**: All, Solutions, Experience, Insight, Connectivity
 - **Country**: All, Sweden, Norway, Denmark, Finland
 - **Horizon**: Toggle forecast periods
 

@@ -90,8 +90,8 @@ class InteractionManager {
   showKPIExplanation(kpiId, domain) {
     const explanations = {
       'revenue': 'Revenue performance is driven by increased billing rates (+1.2%) and higher utilization (+3.1%). New client acquisitions contributed €180K.',
-      'gross-margin': 'Margin decline primarily due to increased delivery costs in Cloud BU. Rate pressure from competitive bids also contributed.',
-      'billable-utilization': 'Utilization improvement driven by better resource allocation and reduced bench time. Cloud and Digital BUs performing above target.',
+      'gross-margin': 'Margin decline primarily due to increased delivery costs in Experience BU. Rate pressure from competitive bids also contributed.',
+      'billable-utilization': 'Utilization improvement driven by better resource allocation and reduced bench time. Solutions and Insight BUs performing above target.',
       'nps': 'NPS improvement reflects enhanced client communication and faster issue resolution. RetailCo and TechCorp scores increased significantly.',
       'ebitda': 'EBITDA growth driven by revenue increase (+12.3%) and controlled cost growth (+8.9%). Operational efficiency initiatives contributing.'
     };

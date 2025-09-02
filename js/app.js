@@ -1,388 +1,628 @@
-// ======================================
-// Main Application Controller
-// ======================================
+/* ---------- Utilities & data ---------- */
+function rand(seed){ let x = Math.sin(seed)*10000; return x - Math.floor(x); }
+function formatPct(n){return (n>=0?'+':'') + (n*100).toFixed(1)+'%';}
+function fmtCurrency(n){return '€' + (n/1e6).toFixed(1) + 'M';}
 
-class App {
-  constructor() {
-    this.isInitialized = false;
-    this.init();
+function series(n, base, vol, trend=0, seed=1){
+  const a=[]; let v=base;
+  for(let i=0;i<n;i++){
+    v += (rand(seed+i)-0.5)*vol + trend;
+    a.push(Math.max(0, v));
   }
+  return a;
+}
+function band(s, width){ return s.map(v => [Math.max(0, v*(1-width)), v*(1+width)]); }
 
-  async init() {
-    try {
-      // Wait for DOM to be ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => this.initialize());
-      } else {
-        this.initialize();
-      }
-    } catch (error) {
-      console.error('App initialization error:', error);
-      this.showErrorState();
-    }
-  }
-
-  async initialize() {
-    // Show initial loading state
-    this.showLoading();
-
-    try {
-      // Initialize navigation manager
-      nav = new NavigationManager();
-      
-      // Set up global error handling
-      this.setupErrorHandling();
-      
-      // Set up performance monitoring
-      this.setupPerformanceMonitoring();
-      
-      // Initialize theme and accessibility features
-      this.initializeAccessibility();
-      
-      // Set up keyboard shortcuts
-      this.setupGlobalKeyboardShortcuts();
-      
-      // Initialize data freshness monitoring
-      this.initializeDataFreshness();
-      
-      // Mark as initialized
-      this.isInitialized = true;
-      
-      // Hide loading state
-      this.hideLoading();
-      
-      console.log('Knowit Analytics Dashboard initialized successfully');
-      
-    } catch (error) {
-      console.error('Failed to initialize app:', error);
-      this.showErrorState();
-    }
-  }
-
-  setupErrorHandling() {
-    // Global error handler
-    window.addEventListener('error', (event) => {
-      console.error('Global error:', event.error);
-      this.handleError(event.error);
-    });
-
-    // Promise rejection handler
-    window.addEventListener('unhandledrejection', (event) => {
-      console.error('Unhandled promise rejection:', event.reason);
-      this.handleError(event.reason);
-    });
-  }
-
-  handleError(error) {
-    // In a real application, this would send errors to a logging service
-    console.error('Application error:', error);
-    
-    // Show user-friendly error message
-    interactions.showToast('Error', 'Something went wrong. Please refresh the page.', 'danger', 5000);
-  }
-
-  setupPerformanceMonitoring() {
-    // Monitor page load performance
-    window.addEventListener('load', () => {
-      if (window.performance && window.performance.timing) {
-        const timing = window.performance.timing;
-        const loadTime = timing.loadEventEnd - timing.navigationStart;
-        console.log(`Page load time: ${loadTime}ms`);
-        
-        // In a real app, send this data to analytics
-        if (loadTime > 3000) {
-          console.warn('Slow page load detected');
-        }
-      }
-    });
-
-    // Monitor Chart.js render times
-    if (window.Chart) {
-      Chart.defaults.onAnimationComplete = function() {
-        console.log('Chart animation completed');
-      };
-    }
-  }
-
-  initializeAccessibility() {
-    // Add skip links
-    this.addSkipLinks();
-    
-    // Set up focus management
-    this.setupFocusManagement();
-    
-    // Initialize screen reader announcements
-    this.setupScreenReaderAnnouncements();
-    
-    // Set up keyboard navigation
-    this.setupKeyboardNavigation();
-  }
-
-  addSkipLinks() {
-    const skipLinks = document.createElement('div');
-    skipLinks.innerHTML = `
-      <a href="#main-content" class="skip-link">Skip to main content</a>
-      <a href="#side-nav" class="skip-link">Skip to navigation</a>
-    `;
-    skipLinks.style.cssText = `
-      position: absolute;
-      top: -40px;
-      left: 6px;
-      z-index: 1000;
-    `;
-    
-    document.body.insertBefore(skipLinks, document.body.firstChild);
-  }
-
-  setupFocusManagement() {
-    // Manage focus when navigating between pages
-    document.addEventListener('pageChanged', (event) => {
-      const pageTitle = document.querySelector('.page-title');
-      if (pageTitle) {
-        pageTitle.focus();
-      }
-    });
-  }
-
-  setupScreenReaderAnnouncements() {
-    // Create live region for announcements
-    const liveRegion = document.createElement('div');
-    liveRegion.setAttribute('aria-live', 'polite');
-    liveRegion.setAttribute('aria-atomic', 'true');
-    liveRegion.className = 'sr-only';
-    liveRegion.id = 'live-region';
-    document.body.appendChild(liveRegion);
-  }
-
-  announceToScreenReader(message) {
-    const liveRegion = document.getElementById('live-region');
-    if (liveRegion) {
-      liveRegion.textContent = message;
-    }
-  }
-
-  setupKeyboardNavigation() {
-    // Tab trap for modals
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Tab') {
-        const activeModal = document.querySelector('.modal-overlay.active');
-        if (activeModal) {
-          this.trapFocus(event, activeModal);
-        }
-      }
-    });
-  }
-
-  trapFocus(event, container) {
-    const focusableElements = container.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-
-    if (event.shiftKey && document.activeElement === firstElement) {
-      event.preventDefault();
-      lastElement.focus();
-    } else if (!event.shiftKey && document.activeElement === lastElement) {
-      event.preventDefault();
-      firstElement.focus();
-    }
-  }
-
-  setupGlobalKeyboardShortcuts() {
-    document.addEventListener('keydown', (event) => {
-      // Only process shortcuts when not in input fields
-      if (event.target.matches('input, textarea, select')) return;
-      
-      // Ctrl/Cmd + K for search
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-        event.preventDefault();
-        nav.navigateTo('search');
-      }
-      
-      // Alt + 1-5 for domain navigation
-      if (event.altKey && event.key >= '1' && event.key <= '5') {
-        event.preventDefault();
-        const domains = ['financial', 'delivery', 'people', 'client', 'strategic'];
-        const index = parseInt(event.key) - 1;
-        if (domains[index]) {
-          nav.navigateTo(domains[index]);
-        }
-      }
-      
-      // Alt + H for home
-      if (event.altKey && event.key === 'h') {
-        event.preventDefault();
-        nav.navigateTo('home');
-      }
-    });
-  }
-
-  initializeDataFreshness() {
-    // Update data freshness indicators
-    this.updateDataFreshness();
-    
-    // Set up periodic updates
-    setInterval(() => {
-      this.updateDataFreshness();
-    }, 60000); // Every minute
-  }
-
-  updateDataFreshness() {
-    const freshnessBadges = document.querySelectorAll('.data-freshness');
-    
-    freshnessBadges.forEach(badge => {
-      // In a real app, this would check actual data timestamps
-      const now = new Date();
-      const timestamps = [
-        new Date(now.getTime() - 2 * 60 * 60 * 1000), // 2 hours ago
-        new Date(now.getTime() - 1 * 60 * 60 * 1000), // 1 hour ago
-        new Date(now.getTime() - 3 * 60 * 60 * 1000), // 3 hours ago
-      ];
-      
-      const randomTimestamp = timestamps[Math.floor(Math.random() * timestamps.length)];
-      const timeDiff = now.getTime() - randomTimestamp.getTime();
-      const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-      
-      const dot = badge.querySelector('.data-freshness-dot');
-      const text = badge.querySelector('span') || badge.childNodes[badge.childNodes.length - 1];
-      
-      if (hours <= 1) {
-        badge.className = 'data-freshness';
-        if (text) text.textContent = `Updated ${hours === 0 ? 'just now' : '1 hour ago'}`;
-      } else if (hours <= 3) {
-        badge.className = 'data-freshness stale';
-        if (text) text.textContent = `Updated ${hours} hours ago`;
-      } else {
-        badge.className = 'data-freshness old';
-        if (text) text.textContent = `Updated ${hours} hours ago`;
-      }
-    });
-  }
-
-  // Loading state management
-  showLoading() {
-    const loadingOverlay = document.getElementById('loading-overlay');
-    if (loadingOverlay) {
-      loadingOverlay.classList.add('active');
-    }
-  }
-
-  hideLoading() {
-    const loadingOverlay = document.getElementById('loading-overlay');
-    if (loadingOverlay) {
-      loadingOverlay.classList.remove('active');
-    }
-  }
-
-  showErrorState() {
-    const contentArea = document.getElementById('content-area');
-    if (contentArea) {
-      contentArea.innerHTML = `
-        <div class="error-state" style="text-align: center; padding: 4rem;">
-          <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--danger-red); margin-bottom: 2rem;"></i>
-          <h2>Something went wrong</h2>
-          <p style="margin: 1rem 0 2rem; color: var(--text-secondary);">
-            We're having trouble loading the dashboard. Please try refreshing the page.
-          </p>
-          <button class="btn btn-primary" onclick="window.location.reload()">
-            <i class="fas fa-refresh"></i>
-            Refresh Page
-          </button>
-        </div>
-      `;
-    }
-    this.hideLoading();
-  }
-
-  // Export functionality
-  exportData(format = 'csv') {
-    console.log(`Exporting data in ${format} format`);
-    interactions.showToast('Export', `Exporting data as ${format.toUpperCase()}...`, 'info', 3000);
-    
-    // In a real app, this would generate and download the file
-    setTimeout(() => {
-      interactions.showToast('Export', 'Export completed successfully', 'success', 3000);
-    }, 2000);
-  }
-
-  // Print functionality
-  printDashboard() {
-    window.print();
-  }
-
-  // Help system
-  showHelp() {
-    const helpModal = this.createHelpModal();
-    document.body.appendChild(helpModal);
-    helpModal.classList.add('active');
-  }
-
-  createHelpModal() {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.innerHTML = `
-      <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-          <h2 class="modal-title">Keyboard Shortcuts</h2>
-          <button class="modal-close" aria-label="Close help">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div style="display: grid; gap: 1rem;">
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-light); border-radius: 4px;">
-              <span><kbd>/</kbd></span>
-              <span>Focus search</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-light); border-radius: 4px;">
-              <span><kbd>Ctrl</kbd> + <kbd>K</kbd></span>
-              <span>Open search page</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-light); border-radius: 4px;">
-              <span><kbd>Alt</kbd> + <kbd>H</kbd></span>
-              <span>Go to home</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-light); border-radius: 4px;">
-              <span><kbd>Alt</kbd> + <kbd>1-5</kbd></span>
-              <span>Navigate to domains</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-light); border-radius: 4px;">
-              <span><kbd>Esc</kbd></span>
-              <span>Close modals</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-    
-    return modal;
-  }
-
-  // Development utilities
-  getDebugInfo() {
-    return {
-      isInitialized: this.isInitialized,
-      currentPage: nav?.currentPage,
-      activeFilters: interactions?.currentFilters,
-      chartCount: charts?.charts?.size || 0,
-      performance: window.performance?.timing
-    };
-  }
-
-  // Clean up resources
-  destroy() {
-    charts?.destroyAllCharts();
-    this.isInitialized = false;
+/* ---------- Canvas mini-chart engine ---------- */
+function drawGrid(ctx, pad, innerW, innerH){
+  ctx.strokeStyle = '#eceaf6'; ctx.lineWidth = 1;
+  for(let i=0;i<=4;i++){
+    const y = pad + i*(innerH/4);
+    ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(pad+innerW,y); ctx.stroke();
   }
 }
 
-// Initialize application
-const app = new App();
+function drawLineChart(ctx, data, options={}){
+  const {w=ctx.canvas.width, h=ctx.canvas.height, yMax, yMin=0, bandData, grid=true, clear=true, color='#6b5b95', dash=[]} = options;
+  if (clear) ctx.clearRect(0,0,w,h);
+  const pad = 28;
+  const innerW = w - pad*2, innerH = h - pad*2;
+  const n = data.length;
+  const ymax = yMax ?? Math.max(...data)*1.2;
+  const ymin = yMin;
+  const sx = innerW/(n-1), sy = innerH/(ymax-ymin);
+  if (grid && clear) drawGrid(ctx, pad, innerW, innerH);
+  // band (only when clear)
+  if (bandData && clear){
+    ctx.fillStyle = 'rgba(140,120,210,0.18)';
+    ctx.beginPath();
+    bandData.forEach((b,i)=>{
+      const x = pad + i*sx;
+      const yLower = pad + innerH - (b[0]-ymin)*sy;
+      if(i===0) ctx.moveTo(x, yLower);
+      else ctx.lineTo(x, yLower);
+    });
+    for(let i=bandData.length-1;i>=0;i--){
+      const x = pad + i*sx;
+      const yUpper = pad + innerH - (bandData[i][1]-ymin)*sy;
+      ctx.lineTo(x, yUpper);
+    }
+    ctx.closePath(); ctx.fill();
+  }
+  // line
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash(dash);
+  ctx.beginPath();
+  data.forEach((v,i)=>{
+    const x = pad + i*sx;
+    const y = pad + innerH - (v - ymin)*sy;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.stroke(); ctx.setLineDash([]);
+}
 
-// Make app available globally for debugging
-window.app = app;
+function drawBars(ctx, data, options={}){
+  const {w=ctx.canvas.width, h=ctx.canvas.height, yMax, yMin=0, color='#b492f0'} = options;
+  ctx.clearRect(0,0,w,h);
+  const pad=28, innerW=w-pad*2, innerH=h-pad*2;
+  const ymax = yMax ?? Math.max(...data)*1.2;
+  const ymin = yMin;
+  const n = data.length;
+  const bw = innerW/n * 0.7;
+  drawGrid(ctx, pad, innerW, innerH);
+  ctx.fillStyle = color;
+  data.forEach((v,i)=>{
+    const x = pad + i*(innerW/n) + (innerW/n - bw)/2;
+    const y = pad + innerH - (v - ymin) * (innerH / (ymax-ymin));
+    const hgt = pad + innerH - y;
+    ctx.fillRect(x, y, bw, hgt);
+  });
+}
+
+function drawArea(ctx, data, options={}){
+  const {w=ctx.canvas.width, h=ctx.canvas.height, yMax, yMin=0, colorFill='rgba(180,146,240,0.35)', colorLine='#6b5b95'} = options;
+  ctx.clearRect(0,0,w,h);
+  const pad=28, innerW=w-pad*2, innerH=h-pad*2;
+  const ymax = yMax ?? Math.max(...data)*1.2;
+  const ymin = yMin;
+  const n = data.length;
+  const sx = innerW/(n-1), sy = innerH/(ymax-ymin);
+  drawGrid(ctx, pad, innerW, innerH);
+  ctx.fillStyle = colorFill;
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const v = data[i];
+    const x = pad + i*sx;
+    const y = pad + innerH - (v - ymin)*sy;
+    if(i===0) ctx.moveTo(x, pad+innerH);
+    ctx.lineTo(x,y);
+  }
+  ctx.lineTo(pad+innerW, pad+innerH); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle=colorLine; ctx.lineWidth=1.5;
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const v = data[i];
+    const x = pad + i*sx; const y = pad + innerH - (v - ymin)* sy;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+}
+
+function drawHeatmap(ctx, grid, options={}){
+  const {w=ctx.canvas.width, h=ctx.canvas.height, min=0, max=100} = options;
+  ctx.clearRect(0,0,w,h);
+  const rows = grid.length, cols = grid[0].length;
+  const pad=28, innerW=w-pad*2, innerH=h-pad*2;
+  const cw = innerW/cols, ch = innerH/rows;
+  // draw cells
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const v = grid[r][c];
+      const t = (v-min)/(max-min);
+      const col = `rgba(107,91,149,${0.08 + t*0.6})`;
+      ctx.fillStyle = col;
+      ctx.fillRect(pad + c*cw, pad + r*ch, cw-1, ch-1);
+      // value
+      ctx.fillStyle = '#4b4f74';
+      ctx.font='10px system-ui';
+      ctx.globalAlpha=0.7;
+      ctx.fillText(Math.round(v)+'%', pad + c*cw + 4, pad + r*ch + 12);
+      ctx.globalAlpha=1;
+    }
+  }
+  // outer grid
+  ctx.strokeStyle='#eceaf6'; ctx.lineWidth=1;
+  for(let i=0;i<=rows;i++){
+    const y = pad + i*ch; ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(pad+innerW, y); ctx.stroke();
+  }
+  for(let j=0;j<=cols;j++){
+    const x = pad + j*cw; ctx.beginPath(); ctx.moveTo(x, pad); ctx.lineTo(x, pad+innerH); ctx.stroke();
+  }
+}
+
+function drawGroupedBars(ctx, seriesList, options={}){
+  const {labels=Array.from({length:seriesList[0].length}, (_,i)=>i+1), colors=['#6b5b95','#88a1ff'], yMin=0, yMax} = options;
+  const w=ctx.canvas.width, h=ctx.canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const pad=28, innerW=w-pad*2, innerH=h-pad*2;
+  const ymax = yMax ?? Math.max(...seriesList.flat())*1.2;
+  const groupCount = labels.length;
+  const groupW = innerW/groupCount;
+  const barW = groupW/(seriesList.length+1);
+  drawGrid(ctx, pad, innerW, innerH);
+  seriesList.forEach((series, si)=>{
+    ctx.fillStyle = colors[si%colors.length];
+    series.forEach((v, i)=>{
+      const x = pad + i*groupW + (si+0.2)*barW;
+      const y = pad + innerH - (v-yMin)*(innerH/(ymax-yMin));
+      const hgt = pad + innerH - y;
+      ctx.fillRect(x,y,barW*0.8,hgt);
+    });
+  });
+}
+
+/* ---------- App state ---------- */
+const App = {
+  mode: 'ask', // default to Ask AI as per spec
+  page: 'home',
+  data: {
+    finance(h=3){
+      return {
+        kpis: [
+          {name:'Revenue (YTD)', val: fmtCurrency(92e6), delta:'+6.2% vs plan'},
+          {name:'Gross Margin %', val:'31.4%', delta:'+1.2pp'},
+          {name:'Revenue / Consultant', val:'€198k', delta:'+3.1%'},
+          {name:'Average Billing Rate', val:'€118/h', delta:'+1.5%'},
+          {name:'Pipeline Coverage (90d)', val:'1.3×', delta:'-0.1×'}
+        ],
+        revActual: series(12, 18, 3, 0.4, 7),
+        revForecast: series(h, 25, 2, 0.6, 8),
+        revBand: band(series(h, 25, 2, 0.6, 8), 0.15),
+        margin: [28,30,31,29,33,32,30,31,32,33,35,34],
+        growth: [3,4,5,6,4,3,5,7,6,8,7,6],
+        rate: [110,112,111,113,115,116,118,119,120,118,119,121]
+      }
+    },
+    delivery(weeks=6){
+      const utilGrid = Array.from({length:3}, (_,r)=>Array.from({length:weeks}, (_,c)=> 70 + Math.round( (rand(r*10+c)*30-10) )));
+      return {
+        kpis: [
+          {name:'Utilization', val:'78.4%', delta:'+2.3pp'},
+          {name:'Bench %', val:'6.8%', delta:'-0.9pp'},
+          {name:'Overrun Rate', val:'12.5%', delta:'-1.2pp'},
+          {name:'On-Time Delivery', val:'92.0%', delta:'+0.8pp'},
+          {name:'Avg Project Duration', val:'14.2w', delta:'-0.4w'},
+        ],
+        heat: utilGrid,
+        bench: series(weeks, 8, 1.2, -0.05, 21).map(v=>Math.max(2, 12 - v)), // pseudo decreasing
+        alloc: series(weeks, 100, 20, 2, 13),
+        otd: series(weeks, 89, 2, 0.3, 17)
+      }
+    },
+    people(h=6){
+      return {
+        kpis: [
+          {name:'Headcount', val:'3,980', delta:'+25 MoM'},
+          {name:'Attrition', val:'12.2%', delta:'-0.4pp'},
+          {name:'Time to Staff', val:'6.1d', delta:'-0.3d'},
+          {name:'Training Hours / FTE', val:'3.8h', delta:'+0.5h'},
+          {name:'Certification Rate', val:'41%', delta:'+2pp'},
+        ],
+        hc: series(h, 3800, 25, 10, 31),
+        demand: series(h, 3850, 25, 8, 32),
+        attr: series(h, 10, 1.5, -0.05, 33),
+        skillNeed: [100,120,140,100,90,80,130,110],
+        skillHave: [95,110,120,92,88,85,120,108],
+        mobility: [20,24,22,28,32,30,34,38,36,40,42,45]
+      }
+    },
+    clients(h=6){
+      return {
+        kpis: [
+          {name:'NPS', val:'55', delta:'+3'},
+          {name:'Repeat Business', val:'68%', delta:'+1pp'},
+          {name:'Top-5 Concentration', val:'41%', delta:'-2pp'},
+          {name:'Avg Deal Size', val:'€186k', delta:'+4.4%'},
+          {name:'Churn Probability', val:'6.1%', delta:'-0.6pp'},
+        ],
+        retention: series(h, 94, 2, -0.2, 41),
+        churn: series(h, 7, 1.2, -0.05, 42),
+        cohort: series(12, 2.5, 0.8, 0.2, 43),
+        mix: Array.from({length:10},()=> Math.max(0.05, rand(Math.random())) ),
+        nps: series(12, 50, 8, 0.2, 44),
+        revGrowth: series(12, 0, 2, 0.5, 45)
+      }
+    }
+  }
+};
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', function() {
+  console.log('Knowit Performance Hub - Sprint 0 Canvas');
+  
+  // Set initial mode to "Ask AI"
+  App.mode = 'ask';
+  const askBtn = document.getElementById('mode-ask');
+  const searchBtn = document.getElementById('mode-search');
+  if (askBtn && searchBtn) {
+    askBtn.classList.add('active');
+    searchBtn.classList.remove('active');
+  }
+  
+  // Initialize theme and logo handling
+  initializeThemeAndLogo();
+  
+  if (typeof showPage === 'function') {
+    showPage('home');
+  }
+  
+  // Set up all event listeners
+  setupEventListeners();
+  
+  // Render mini charts on home page
+  renderHomeMinis();
+});
+
+/* ---------- Theme and Logo Management ---------- */
+function initializeThemeAndLogo() {
+  // Force light theme as per specifications
+  document.body.setAttribute('data-theme', 'light');
+  
+  // Update logo based on theme
+  updateLogoForTheme('light');
+  
+  // Listen for system theme changes (optional future feature)
+  if (window.matchMedia) {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addListener(handleThemeChange);
+  }
+}
+
+function updateLogoForTheme(theme) {
+  const logoImg = document.querySelector('.brand .logo');
+  if (logoImg) {
+    if (theme === 'dark') {
+      logoImg.src = 'assets/icons/Logotype-Knowit-Digital-White.svg';
+    } else {
+      logoImg.src = 'assets/icons/Logotype-Knowit-Digital-Black.svg';
+    }
+  }
+}
+
+function handleThemeChange(e) {
+  // Currently forcing light theme, but this could be used for future dark mode support
+  // if (e.matches) {
+  //   updateLogoForTheme('dark');
+  // } else {
+  //   updateLogoForTheme('light');
+  // }
+  
+  // Force light theme as per current specifications
+  updateLogoForTheme('light');
+}
+
+/* ---------- Navigation ---------- */
+function setupEventListeners() {
+  const home = document.getElementById('home');
+  
+  // Card click navigation
+  document.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      showPage(card.dataset.page);
+    });
+  });
+  
+  // Back button navigation
+  document.querySelectorAll('[data-back]').forEach(b=>b.addEventListener('click', ()=>showPage('home')));
+  
+  // Search & Ask mode toggle
+  const modeSearch = document.getElementById('mode-search');
+  const modeAsk = document.getElementById('mode-ask');
+  if (modeSearch && modeAsk) {
+    modeSearch.addEventListener('click', ()=>{App.mode='search'; modeSearch.classList.add('active'); modeAsk.classList.remove('active');});
+    modeAsk.addEventListener('click', ()=>{App.mode='ask'; modeAsk.classList.add('active'); modeSearch.classList.remove('active');});
+  }
+  
+  // Search functionality
+  const goButton = document.getElementById('goButton');
+  const searchInput = document.getElementById('searchInput');
+  if (goButton) goButton.addEventListener('click', runQuery);
+  if (searchInput) searchInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') runQuery(); });
+  
+  // Panel close
+  const panelClose = document.getElementById('panel-close');
+  if (panelClose) panelClose.addEventListener('click', ()=>document.getElementById('panel').classList.remove('open'));
+  
+  // Finance horizon buttons
+  document.querySelectorAll('#fin-horizon button').forEach(b=> b.addEventListener('click', ()=>{ 
+    document.querySelectorAll('#fin-horizon button').forEach(x=>x.classList.remove('active')); 
+    b.classList.add('active'); 
+    if (App.page === 'finance') renderFinance(); 
+  }));
+  
+  // Delivery horizon buttons
+  document.querySelectorAll('#del-horizon button').forEach(b=> b.addEventListener('click', ()=>{ 
+    document.querySelectorAll('#del-horizon button').forEach(x=>x.classList.remove('active')); 
+    b.classList.add('active'); 
+    if (App.page === 'delivery') renderDelivery(); 
+  }));
+  
+  // People horizon buttons
+  document.querySelectorAll('#peo-horizon button').forEach(b=> b.addEventListener('click', ()=>{ 
+    document.querySelectorAll('#peo-horizon button').forEach(x=>x.classList.remove('active')); 
+    b.classList.add('active'); 
+    if (App.page === 'people') renderPeople(); 
+  }));
+  
+  // Clients horizon buttons
+  document.querySelectorAll('#cli-horizon button').forEach(b=> b.addEventListener('click', ()=>{ 
+    document.querySelectorAll('#cli-horizon button').forEach(x=>x.classList.remove('active')); 
+    b.classList.add('active'); 
+    if (App.page === 'clients') renderClients(); 
+  }));
+}
+
+function showPage(name){
+  const home = document.getElementById('home');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  if(name==='home'){ 
+    if (home) home.style.display='block'; 
+  } else { 
+    if (home) home.style.display='none'; 
+    const page = document.getElementById('page-'+name);
+    if (page) page.classList.add('active'); 
+  }
+  App.page = name;
+  if(name==='finance') renderFinance();
+  if(name==='delivery') renderDelivery();
+  if(name==='people') renderPeople();
+  if(name==='clients') renderClients();
+}
+
+function runQuery(){
+  const q = document.getElementById('searchInput').value.trim();
+  const panel = document.getElementById('panel');
+  const content = document.getElementById('panel-content');
+  if(!panel || !content) return;
+  
+  if(App.mode==='search'){
+    content.innerHTML = '<strong>Search results (mock)</strong><ul><li>Dashboard: Financial Performance</li><li>Project: Experience Migration Alfa</li><li>Client: Contoso AB</li><li>Doc: Rate Card FY25</li></ul>';
+  } else {
+    content.innerHTML = '<strong>Answer (mock)</strong><p>Margin dipped 0.8pp in May due to lower utilization in Data BU (-3.1pp) and higher subcontractor mix (+2.4pp). Recovery expected in 6\u20138 weeks as pipeline converts (1.3\u00d7 coverage).</p>';
+  }
+  panel.classList.add('open');
+}
+
+/* ---------- Renderers ---------- */
+// Home mini-charts
+function renderHomeMinis(){
+  // Finance: area sparkline with band
+  const financeCanvas = document.getElementById('mini-finance');
+  if (financeCanvas) {
+    const fctx = financeCanvas.getContext('2d');
+    const f = App.data.finance(3);
+    drawLineChart(fctx, f.revActual.slice(-8).concat(f.revForecast.slice(0,2)), {yMin:0, color:getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#6b5b95'});
+  }
+  
+  // Delivery: utilization sparkline
+  const deliveryCanvas = document.getElementById('mini-delivery');
+  if (deliveryCanvas) {
+    const dctx = deliveryCanvas.getContext('2d');
+    const d = App.data.delivery(12);
+    const utilAvg = d.heat.map(row => row.map(v=>v)).flat().slice(-12);
+    drawLineChart(dctx, utilAvg.map((_,i)=> 80 + (Math.sin(i/2)*5) + (Math.random()*2-1)), {yMin:70, yMax:95});
+  }
+  
+  // People: dual-line headcount vs demand
+  const peopleCanvas = document.getElementById('mini-people');
+  if (peopleCanvas) {
+    const pctx = peopleCanvas.getContext('2d');
+    const p = App.data.people(8);
+    drawLineChart(pctx, p.hc, {yMin:3600, color:getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#6b5b95'});
+    drawLineChart(pctx, p.demand, {yMin:3600, clear:false, grid:false, color:getComputedStyle(document.documentElement).getPropertyValue('--primary-alt') || '#88a1ff', dash:[4,4]});
+  }
+  
+  // Clients: retention line
+  const clientsCanvas = document.getElementById('mini-clients');
+  if (clientsCanvas) {
+    const cctx = clientsCanvas.getContext('2d');
+    const c = App.data.clients(8);
+    drawLineChart(cctx, c.retention, {yMin:80, yMax:100, color:getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#6b5b95'});
+  }
+}
+
+// Finance
+function renderFinance(){
+  const horizonBtn = document.querySelector('#fin-horizon .active');
+  const horizon = horizonBtn ? +horizonBtn.dataset.h : 3;
+  const D = App.data.finance(horizon);
+  const k = document.getElementById('fin-kpis');
+  if (k) {
+    k.innerHTML = '';
+    D.kpis.forEach((i)=>{
+      const el = document.createElement('div'); el.className='kpi';
+      el.innerHTML = '<div class="name">'+i.name+'</div><div class="val">'+i.val+'</div><div class="delta">'+i.delta+'</div>';
+      el.addEventListener('click', ()=>{
+        const panel = document.getElementById('panel');
+        const content = document.getElementById('panel-content');
+        if (panel && content) {
+          content.innerHTML = '<strong>'+i.name+'</strong><p>Quick insight (mock): metric is trending within target range. Click "Explain variance" for drivers.</p>';
+          panel.classList.add('open');
+        }
+      });
+      k.appendChild(el);
+    });
+  }
+  
+  const rev = D.revActual.concat(D.revForecast);
+  const bandData = (D.revActual.map(v=>[v,v])).concat(D.revBand);
+  const finRevCanvas = document.getElementById('fin-rev');
+  if (finRevCanvas) {
+    drawLineChart(finRevCanvas.getContext('2d'), rev, {bandData, yMin:0, color:getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#6b5b95'});
+  }
+  
+  const finMarginCanvas = document.getElementById('fin-margin');
+  if (finMarginCanvas) {
+    drawBars(finMarginCanvas.getContext('2d'), D.margin, {});
+  }
+  
+  const finGrowCanvas = document.getElementById('fin-grow');
+  if (finGrowCanvas) {
+    drawBars(finGrowCanvas.getContext('2d'), D.growth, {});
+  }
+  
+  const finRateCanvas = document.getElementById('fin-rate');
+  if (finRateCanvas) {
+    drawLineChart(finRateCanvas.getContext('2d'), D.rate, {});
+  }
+  
+  const explainBtn = document.getElementById('fin-explain');
+  if (explainBtn) {
+    explainBtn.onclick = ()=>{
+      const panel = document.getElementById('panel');
+      const content = document.getElementById('panel-content');
+      if (panel && content) {
+        content.innerHTML = `
+        <strong>Revenue variance drivers (mock)</strong>
+        <ul>
+          <li><b>Utilization</b>: +1.9pp vs plan, adds \u20ac1.2M</li>
+          <li><b>Rate mix</b>: -\u20ac0.4M from discounting in two accounts</li>
+          <li><b>Service mix</b>: +\u20ac0.6M from Experience projects</li>
+        </ul>
+        <p>Actions: tighten discount approvals, accelerate two Experience deals, reassign 8 consultants from bench.</p>`;
+        panel.classList.add('open');
+      }
+    };
+  }
+}
+
+// Delivery
+function renderDelivery(){
+  const horizonBtn = document.querySelector('#del-horizon .active');
+  const horizon = horizonBtn ? +horizonBtn.dataset.h : 6;
+  const D = App.data.delivery(horizon);
+  const k = document.getElementById('del-kpis'); 
+  if (k) {
+    k.innerHTML='';
+    D.kpis.forEach(i=>{
+      const el = document.createElement('div'); el.className='kpi';
+      el.innerHTML = '<div class="name">'+i.name+'</div><div class="val">'+i.val+'</div><div class="delta">'+i.delta+'</div>';
+      k.appendChild(el);
+    });
+  }
+  
+  const delHeatCanvas = document.getElementById('del-heat');
+  if (delHeatCanvas) {
+    drawHeatmap(delHeatCanvas.getContext('2d'), D.heat, {min:60, max:95});
+  }
+  
+  const delBenchCanvas = document.getElementById('del-bench');
+  if (delBenchCanvas) {
+    drawLineChart(delBenchCanvas.getContext('2d'), D.bench, {yMin:0});
+  }
+  
+  const delAllocCanvas = document.getElementById('del-alloc');
+  if (delAllocCanvas) {
+    drawArea(delAllocCanvas.getContext('2d'), D.alloc, {yMin:0});
+  }
+  
+  const delOtdCanvas = document.getElementById('del-otd');
+  if (delOtdCanvas) {
+    drawLineChart(delOtdCanvas.getContext('2d'), D.otd, {yMin:80, yMax:100});
+  }
+}
+
+// People
+function renderPeople(){
+  const horizonBtn = document.querySelector('#peo-horizon .active');
+  const horizon = horizonBtn ? +horizonBtn.dataset.h : 6;
+  const D = App.data.people(horizon);
+  const k = document.getElementById('peo-kpis'); 
+  if (k) {
+    k.innerHTML='';
+    D.kpis.forEach(i=>{ 
+      const el=document.createElement('div'); el.className='kpi'; 
+      el.innerHTML = '<div class="name">'+i.name+'</div><div class="val">'+i.val+'</div><div class="delta">'+i.delta+'</div>'; 
+      k.appendChild(el); 
+    });
+  }
+  
+  const peoHcCanvas = document.getElementById('peo-hc');
+  if (peoHcCanvas) {
+    const ctxHC = peoHcCanvas.getContext('2d');
+    drawLineChart(ctxHC, D.hc, {yMin:3600, color:getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#6b5b95'});
+    drawLineChart(ctxHC, D.demand, {yMin:3600, clear:false, grid:false, color:getComputedStyle(document.documentElement).getPropertyValue('--primary-alt') || '#88a1ff', dash:[4,4]});
+  }
+  
+  const peoAttrCanvas = document.getElementById('peo-attr');
+  if (peoAttrCanvas) {
+    drawLineChart(peoAttrCanvas.getContext('2d'), D.attr, {yMin:6, yMax:16});
+  }
+  
+  const peoSkillCanvas = document.getElementById('peo-skill');
+  if (peoSkillCanvas) {
+    drawGroupedBars(peoSkillCanvas.getContext('2d'), [D.skillNeed, D.skillHave], {labels:['Solutions','Experience','AI','Dev','QA','PM','Security','UX']});
+  }
+  
+  const peoMobCanvas = document.getElementById('peo-mob');
+  if (peoMobCanvas) {
+    drawBars(peoMobCanvas.getContext('2d'), D.mobility, {yMin:0});
+  }
+}
+
+// Clients
+function renderClients(){
+  const horizonBtn = document.querySelector('#cli-horizon .active');
+  const horizon = horizonBtn ? +horizonBtn.dataset.h : 6;
+  const D = App.data.clients(horizon);
+  const k = document.getElementById('cli-kpis'); 
+  if (k) {
+    k.innerHTML='';
+    D.kpis.forEach(i=>{ 
+      const el=document.createElement('div'); el.className='kpi'; 
+      el.innerHTML = '<div class="name">'+i.name+'</div><div class="val">'+i.val+'</div><div class="delta">'+i.delta+'</div>'; 
+      k.appendChild(el); 
+    });
+  }
+  
+  const cliRetCanvas = document.getElementById('cli-ret');
+  if (cliRetCanvas) {
+    const ctxR = cliRetCanvas.getContext('2d');
+    drawLineChart(ctxR, D.retention, {yMin:80, yMax:100, color:getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#6b5b95'});
+    drawLineChart(ctxR, D.churn.map(x=>100-x), {yMin:80, yMax:100, clear:false, grid:false, color:getComputedStyle(document.documentElement).getPropertyValue('--primary-alt') || '#88a1ff', dash:[5,3]});
+  }
+  
+  const cliCohortCanvas = document.getElementById('cli-cohort');
+  if (cliCohortCanvas) {
+    drawBars(cliCohortCanvas.getContext('2d'), D.cohort, {yMin:0});
+  }
+  
+  // simple row treemap
+  const cliMixCanvas = document.getElementById('cli-mix');
+  if (cliMixCanvas) {
+    const ctxT = cliMixCanvas.getContext('2d');
+    (function drawTreemap(values){
+      const w = ctxT.canvas.width, h = ctxT.canvas.height; ctxT.clearRect(0,0,w,h);
+      const pad=16; let x=pad, y=pad; const innerW=w-pad*2, innerH=h-pad*2;
+      const total = values.reduce((a,b)=>a+b,0);
+      let rowH = innerH/3; let row = 0;
+      values.forEach((v,i)=>{
+        const wFrac = (v/total)*innerW;
+        ctxT.fillStyle = `rgba(107,91,149,${0.25 + 0.6*(v/Math.max(...values))})`;
+        ctxT.fillRect(x,y,wFrac-4,rowH-4);
+        ctxT.fillStyle = '#4b4f74'; ctxT.font='12px system-ui'; ctxT.fillText('Client '+(i+1), x+6, y+16);
+        x += wFrac;
+        if (x > pad + innerW*0.95){ x = pad; row++; y = pad + row*rowH; }
+      });
+    })(D.mix);
+  }
+  
+  const cliNpsCanvas = document.getElementById('cli-nps');
+  if (cliNpsCanvas) {
+    const ctxN = cliNpsCanvas.getContext('2d');
+    drawLineChart(ctxN, D.nps, {yMin:0, yMax:100, color:getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#6b5b95'});
+    drawLineChart(ctxN, D.revGrowth.map(v=>v*10+50), {yMin:0, yMax:100, clear:false, grid:false, color:getComputedStyle(document.documentElement).getPropertyValue('--primary-alt') || '#88a1ff', dash:[4,4]});
+  }
+}
 
 // Export debug function for console use
 window.getDebugInfo = () => app.getDebugInfo();

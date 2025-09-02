@@ -329,6 +329,7 @@
 @media (min-width: 1441px) {
   .container {
     max-width: 1600px;
+    padding: 48px 80px;
   }
   
   .domain-tiles {
