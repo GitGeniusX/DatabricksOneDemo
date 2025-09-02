@@ -22,6 +22,112 @@ function drawGrid(ctx, pad, innerW, innerH){
   }
 }
 
+// Enhanced area chart function
+function drawAreaChart(ctx, data, options={}){
+  const {w=ctx.canvas.width, h=ctx.canvas.height, yMax, yMin=0, color='#6b5b95', fillColor='rgba(107,91,149,0.3)'} = options;
+  ctx.clearRect(0,0,w,h);
+  const pad = 8;
+  const innerW = w - pad*2, innerH = h - pad*2;
+  const n = data.length;
+  const ymax = yMax ?? Math.max(...data)*1.2;
+  const ymin = yMin;
+  const sx = innerW/(n-1), sy = innerH/(ymax-ymin);
+  
+  // Create path for area fill
+  ctx.fillStyle = fillColor;
+  ctx.beginPath();
+  ctx.moveTo(pad, pad + innerH); // Start at bottom left
+  for(let i=0; i<n; i++){
+    const x = pad + i*sx;
+    const y = pad + innerH - (data[i]-ymin)*sy;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(pad + (n-1)*sx, pad + innerH); // End at bottom right
+  ctx.closePath();
+  ctx.fill();
+  
+  // Draw line on top
+  ctx.strokeStyle = color; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for(let i=0; i<n; i++){
+    const x = pad + i*sx;
+    const y = pad + innerH - (data[i]-ymin)*sy;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+}
+
+// Mini bar chart function
+function drawMiniBarChart(ctx, data, options={}){
+  const {w=ctx.canvas.width, h=ctx.canvas.height, horizontal=false, colors=['#6b5b95']} = options;
+  ctx.clearRect(0,0,w,h);
+  const pad = 4;
+  const innerW = w - pad*2, innerH = h - pad*2;
+  const max = Math.max(...data);
+  
+  if(horizontal){
+    const barHeight = innerH / data.length;
+    data.forEach((val, i) => {
+      const barWidth = (val/max) * innerW;
+      const y = pad + i * barHeight;
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fillRect(pad, y + 2, barWidth, barHeight - 4);
+    });
+  } else {
+    const barWidth = innerW / data.length;
+    data.forEach((val, i) => {
+      const barHeight = (val/max) * innerH;
+      const x = pad + i * barWidth;
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fillRect(x + 2, pad + innerH - barHeight, barWidth - 4, barHeight);
+    });
+  }
+}
+
+// Mini doughnut chart function
+function drawMiniDoughnut(ctx, data, options={}){
+  const {w=ctx.canvas.width, h=ctx.canvas.height, colors=['#6b5b95']} = options;
+  ctx.clearRect(0,0,w,h);
+  const centerX = w/2, centerY = h/2;
+  const outerRadius = Math.min(w,h)/2 - 4;
+  const innerRadius = outerRadius * 0.6;
+  const total = data.reduce((a,b)=>a+b,0);
+  
+  let startAngle = -Math.PI/2;
+  data.forEach((val, i) => {
+    const sliceAngle = (val/total) * 2 * Math.PI;
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, outerRadius, startAngle, startAngle + sliceAngle);
+    ctx.arc(centerX, centerY, innerRadius, startAngle + sliceAngle, startAngle, true);
+    ctx.closePath();
+    ctx.fill();
+    startAngle += sliceAngle;
+  });
+}
+
+// Mini scatter plot function
+function drawMiniScatter(ctx, data, options={}){
+  const {w=ctx.canvas.width, h=ctx.canvas.height, color='#6b5b95'} = options;
+  ctx.clearRect(0,0,w,h);
+  const pad = 8;
+  const innerW = w - pad*2, innerH = h - pad*2;
+  
+  const xValues = data.map(d => d.x);
+  const yValues = data.map(d => d.y);
+  const xMin = Math.min(...xValues), xMax = Math.max(...xValues);
+  const yMin = Math.min(...yValues), yMax = Math.max(...yValues);
+  
+  ctx.fillStyle = color;
+  data.forEach(point => {
+    const x = pad + ((point.x - xMin) / (xMax - xMin)) * innerW;
+    const y = pad + innerH - ((point.y - yMin) / (yMax - yMin)) * innerH;
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, 2 * Math.PI);
+    ctx.fill();
+  });
+}
+
 function drawLineChart(ctx, data, options={}){
   const {w=ctx.canvas.width, h=ctx.canvas.height, yMax, yMin=0, bandData, grid=true, clear=true, color='#6b5b95', dash=[]} = options;
   if (clear) ctx.clearRect(0,0,w,h);
@@ -395,38 +501,41 @@ function runQuery(){
 /* ---------- Renderers ---------- */
 // Home mini-charts
 function renderHomeMinis(){
-  // Finance: area sparkline with band
+  // Finance: area chart with gradient
   const financeCanvas = document.getElementById('mini-finance');
   if (financeCanvas) {
     const fctx = financeCanvas.getContext('2d');
     const f = App.data.finance(3);
-    drawLineChart(fctx, f.revActual.slice(-8).concat(f.revForecast.slice(0,2)), {yMin:0, color:getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#6b5b95'});
+    const data = f.revActual.slice(-8).concat(f.revForecast.slice(0,2));
+    drawAreaChart(fctx, data, {yMin:0, color:'#6b5b95', fillColor:'rgba(107,91,149,0.3)'});
   }
   
-  // Delivery: utilization sparkline
+  // Delivery: horizontal bar chart for utilization
   const deliveryCanvas = document.getElementById('mini-delivery');
   if (deliveryCanvas) {
     const dctx = deliveryCanvas.getContext('2d');
     const d = App.data.delivery(12);
-    const utilAvg = d.heat.map(row => row.map(v=>v)).flat().slice(-12);
-    drawLineChart(dctx, utilAvg.map((_,i)=> 80 + (Math.sin(i/2)*5) + (Math.random()*2-1)), {yMin:70, yMax:95});
+    const utilData = [82, 87, 75, 91, 78];
+    drawMiniBarChart(dctx, utilData, {horizontal: true, colors: ['#6b5b95', '#88a1ff', '#b492f0', '#9ca3af', '#f59e0b']});
   }
   
-  // People: dual-line headcount vs demand
+  // People: doughnut chart for skills distribution
   const peopleCanvas = document.getElementById('mini-people');
   if (peopleCanvas) {
     const pctx = peopleCanvas.getContext('2d');
-    const p = App.data.people(8);
-    drawLineChart(pctx, p.hc, {yMin:3600, color:getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#6b5b95'});
-    drawLineChart(pctx, p.demand, {yMin:3600, clear:false, grid:false, color:getComputedStyle(document.documentElement).getPropertyValue('--primary-alt') || '#88a1ff', dash:[4,4]});
+    const skillData = [25, 30, 20, 15, 10];
+    drawMiniDoughnut(pctx, skillData, {colors: ['#6b5b95', '#88a1ff', '#b492f0', '#9ca3af', '#f59e0b']});
   }
   
-  // Clients: retention line
+  // Clients: scatter plot for NPS vs Revenue
   const clientsCanvas = document.getElementById('mini-clients');
   if (clientsCanvas) {
     const cctx = clientsCanvas.getContext('2d');
-    const c = App.data.clients(8);
-    drawLineChart(cctx, c.retention, {yMin:80, yMax:100, color:getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#6b5b95'});
+    const scatterData = [
+      {x: 65, y: 1.2}, {x: 72, y: 2.1}, {x: 58, y: 0.8}, 
+      {x: 81, y: 3.2}, {x: 77, y: 2.8}, {x: 69, y: 1.9}
+    ];
+    drawMiniScatter(cctx, scatterData, {color: '#6b5b95'});
   }
 }
 

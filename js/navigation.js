@@ -390,7 +390,7 @@ const pageTemplates = {
     return `
       <div class="databricks-home">
         <div class="home-greeting">
-          <h1 class="greeting-text">Hi, Johan</h1>
+          <h1 class="greeting-text">Hi, KYD!</h1>
           <p class="greeting-subtitle">What would you like to know?</p>
         </div>
         
