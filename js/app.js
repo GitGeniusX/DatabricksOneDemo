@@ -51,7 +51,7 @@ class App {
       // Hide loading state
       this.hideLoading();
       
-      console.log('Consulting Analytics Dashboard initialized successfully');
+      console.log('Knowit Analytics Dashboard initialized successfully');
       
     } catch (error) {
       console.error('Failed to initialize app:', error);

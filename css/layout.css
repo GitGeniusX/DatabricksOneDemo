@@ -57,6 +57,13 @@
   font-size: var(--font-size-2xl);
 }
 
+.logo-image {
+  height: 32px;
+  width: auto;
+  /* Convert white/cream logo to dark blue to match our primary color */
+  filter: brightness(0) saturate(100%) invert(27%) sepia(42%) saturate(1822%) hue-rotate(203deg) brightness(92%) contrast(96%);
+}
+
 /* Global Search */
 .global-search {
   position: relative;
@@ -346,6 +353,10 @@
   text-align: center;
   margin-bottom: var(--spacing-4xl);
   padding: var(--spacing-4xl) 0;
+  background: linear-gradient(135deg, #fafbfc 0%, #f0f4f8 100%);
+  border-radius: var(--radius-xl);
+  margin: 0 calc(-1 * var(--spacing-xl)) var(--spacing-4xl) calc(-1 * var(--spacing-xl));
+  padding: var(--spacing-4xl) var(--spacing-xl);
 }
 
 .home-hero-title {

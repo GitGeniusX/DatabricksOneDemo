@@ -371,10 +371,10 @@ const pageTemplates = {
   home() {
     return `
       <div class="home-hero">
-        <h1 class="home-hero-title">Analytics Hub</h1>
+        <h1 class="home-hero-title">Knowit Analytics</h1>
         <p class="home-hero-subtitle">
-          Comprehensive consulting analytics across Financial Performance, Delivery Operations, 
-          People & Talent, Client Success, and Strategic metrics.
+          Comprehensive business intelligence across Financial Performance, Delivery Operations, 
+          People & Talent, Client Success, and Strategic insights for Nordic consulting excellence.
         </p>
         <div class="home-hero-metrics">
           <div class="home-hero-metric">

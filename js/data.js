@@ -195,8 +195,8 @@ class MockDataService {
       },
       filters: {
         timeRanges: ['3m', '6m', '12m'],
-        businessUnits: ['all', 'cloud', 'digital', 'analytics', 'strategy'],
-        countries: ['all', 'sweden', 'norway', 'denmark', 'finland'],
+        businessUnits: ['all', 'solutions', 'experience', 'connectivity', 'insight'],
+        countries: ['all', 'sweden', 'norway', 'denmark', 'finland', 'poland'],
         serviceLines: ['advisory', 'implementation', 'support'],
         clientTiers: ['enterprise', 'mid-market', 'smb']
       },
