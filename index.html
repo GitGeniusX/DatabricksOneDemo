@@ -236,61 +236,68 @@
       try {
         const response = await mockData.askQuestion(query);
         hideTypingIndicator();
-        addChatMessage(response, 'assistant');
+        addChatMessage(response, 'assistant', query); // Pass the user question
       } catch (error) {
         hideTypingIndicator();
         addChatMessage({
           summary: ['Sorry, I encountered an error processing your question. Please try again.'],
           linkedVisuals: []
-        }, 'assistant');
+        }, 'assistant', query);
       }
     }, 1500);
   }
   
 
 
-  function addChatMessage(content, sender) {
+  function addChatMessage(content, sender, userQuestion = null) {
     const chatMessages = document.getElementById('home-chat-messages');
     if (!chatMessages) return;
-      
-    // Only show AI responses
-    if (sender === 'user') {
-      return;
-    }
     
-    // Clear any existing messages to prevent duplicates
-    chatMessages.innerHTML = '';
+    // Show user question if provided
+    if (userQuestion && sender === 'assistant') {
+      const userDiv = document.createElement('div');
+      userDiv.className = 'chat-message user';
+      userDiv.innerHTML = `
+        <div class="message-content">
+          <div class="user-question">${escapeHtml(userQuestion)}</div>
+        </div>
+      `;
+      chatMessages.appendChild(userDiv);
+    }
       
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'chat-message assistant';
-      
-    const messageContent = document.createElement('div');
-    messageContent.className = 'message-content';
-      
-    // Clean response without avatars or timestamps
-    const summaryHtml = content.summary.map(point => 
-      `<div class="ask-response-line">${escapeHtml(point)}</div>`
-    ).join('');
+    // Only show AI responses for assistant messages
+    if (sender === 'assistant') {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'chat-message assistant';
         
-    const linksHtml = content.linkedVisuals.length > 0 ? `
-      <div class="message-links">
-        ${content.linkedVisuals.map(visual => 
-          `<button class="chart-link" onclick="openChatChart('${escapeHtml(visual)}')">
-            <i class="fas fa-chart-bar"></i> ${escapeHtml(visual)}
-          </button>`
-        ).join('')}
-      </div>
-    ` : '';
+      const messageContent = document.createElement('div');
+      messageContent.className = 'message-content';
         
-    messageContent.innerHTML = `
-      <div class="message-text">
-        ${summaryHtml}
-        ${linksHtml}
-      </div>
-    `;
-      
-    messageDiv.appendChild(messageContent);
-    chatMessages.appendChild(messageDiv);
+      // Clean response without avatars or timestamps
+      const summaryHtml = content.summary.map(point => 
+        `<div class="ask-response-line">${escapeHtml(point)}</div>`
+      ).join('');
+          
+      const linksHtml = content.linkedVisuals.length > 0 ? `
+        <div class="message-links">
+          ${content.linkedVisuals.map(visual => 
+            `<button class="chart-link" onclick="openChatChart('${escapeHtml(visual)}')">
+              <i class="fas fa-chart-bar"></i> ${escapeHtml(visual)}
+            </button>`
+          ).join('')}
+        </div>
+      ` : '';
+          
+      messageContent.innerHTML = `
+        <div class="message-text">
+          ${summaryHtml}
+          ${linksHtml}
+        </div>
+      `;
+        
+      messageDiv.appendChild(messageContent);
+      chatMessages.appendChild(messageDiv);
+    }
     
     // Scroll to bottom if needed
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -366,9 +373,43 @@
     const q = document.getElementById('searchInput').value.trim();
     if (!q) return;
       
-    // Start chat on home page
-    startHomeChatWithQuery(q);
+    const chatMessagesArea = document.getElementById('chat-messages-area');
+    
+    // Check if chat is already active (follow-up question)
+    if (chatMessagesArea && chatMessagesArea.style.display === 'block') {
+      // This is a follow-up question
+      askFollowUpQuestion(q);
+    } else {
+      // Start new chat on home page
+      startHomeChatWithQuery(q);
+    }
   };
+  
+  // Handle follow-up questions
+  function askFollowUpQuestion(question) {
+    const searchInput = document.getElementById('searchInput');
+    
+    // Clear search input
+    searchInput.value = '';
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    // Simulate AI response to follow-up
+    setTimeout(async () => {
+      try {
+        const response = await mockData.askQuestion(question);
+        hideTypingIndicator();
+        addChatMessage(response, 'assistant', question); // Pass the follow-up question
+      } catch (error) {
+        hideTypingIndicator();
+        addChatMessage({
+          summary: ['Sorry, I encountered an error processing your follow-up question. Please try again.'],
+          linkedVisuals: []
+        }, 'assistant', question);
+      }
+    }, 1500);
+  }
   
   // Remove old event listeners and add new ones that use our override
   setTimeout(() => {

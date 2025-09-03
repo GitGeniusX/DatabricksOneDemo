@@ -8,9 +8,25 @@
   text-align: left;
 }
 
+.search .box .chat-message.user {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
 .search .box .chat-message.assistant {
   display: block;
   width: 100%;
+}
+
+.search .box .user-question {
+  background: #f3f4f6;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  border-left: 3px solid #6366f1;
+  margin-bottom: 8px;
 }
 
 .search .box .message-content {
