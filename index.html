@@ -441,11 +441,427 @@
   window.openChatChart = function(chartName) {
     const modal = document.getElementById('chart-modal');
     const titleElement = document.getElementById('chart-modal-title-text');
-    if (modal && titleElement) {
+    const bodyElement = document.getElementById('chart-modal-body');
+    
+    if (modal && titleElement && bodyElement) {
       titleElement.textContent = chartName;
+      
+      // Clear previous content
+      bodyElement.innerHTML = '';
+      
+      // Create canvas for chart
+      const canvas = document.createElement('canvas');
+      canvas.id = 'modal-chart';
+      canvas.width = 600;
+      canvas.height = 400;
+      
+      bodyElement.appendChild(canvas);
+      
+      // Show modal
       modal.classList.add('active');
+      
+      // Generate chart based on name
+      setTimeout(() => {
+        generateMockupChart(canvas, chartName);
+      }, 100);
     }
   };
+  
+  function generateMockupChart(canvas, chartName) {
+    const ctx = canvas.getContext('2d');
+    
+    // Destroy existing chart if any
+    if (window.modalChart) {
+      window.modalChart.destroy();
+    }
+    
+    let chartConfig;
+    
+    // Different charts based on name
+    switch(chartName) {
+      case 'Revenue Forecast vs Actuals':
+        chartConfig = {
+          type: 'line',
+          data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+              label: 'Forecast',
+              data: [2100, 2300, 2500, 2700, 2900, 3100],
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+              fill: true
+            }, {
+              label: 'Actual',
+              data: [2200, 2400, 2650, 2800, 3050, null],
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Revenue Performance (€K)'
+              },
+              legend: {
+                position: 'top'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: false,
+                title: {
+                  display: true,
+                  text: 'Revenue (€K)'
+                }
+              }
+            }
+          }
+        };
+        break;
+        
+      case 'Margin Analysis by Service Line':
+        chartConfig = {
+          type: 'bar',
+          data: {
+            labels: ['Solutions', 'Experience', 'Insight', 'Connectivity'],
+            datasets: [{
+              label: 'Gross Margin %',
+              data: [32.5, 28.9, 35.2, 31.8],
+              backgroundColor: ['#6366f1', '#8b5cf6', '#06b6d4', '#10b981']
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Profitability by Business Unit'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Margin (%)'
+                }
+              }
+            }
+          }
+        };
+        break;
+        
+      case 'Utilization Heatmap':
+        chartConfig = {
+          type: 'bar',
+          data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+            datasets: [{
+              label: 'Utilization %',
+              data: [76, 82, 79, 85, 78, 81],
+              backgroundColor: function(context) {
+                const value = context.parsed.y;
+                if (value >= 80) return '#10b981'; // Green
+                if (value >= 75) return '#f59e0b'; // Yellow
+                return '#ef4444'; // Red
+              }
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Team Utilization Over Time'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                title: {
+                  display: true,
+                  text: 'Utilization (%)'
+                }
+              }
+            }
+          }
+        };
+        break;
+        
+      case 'Headcount vs Demand Forecast':
+        chartConfig = {
+          type: 'line',
+          data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            datasets: [{
+              label: 'Current Headcount',
+              data: [3920, 3950, 3980, 4005, 4020, 4035, 4050, 4070],
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99, 102, 241, 0.1)'
+            }, {
+              label: 'Demand Forecast',
+              data: [3950, 4000, 4050, 4100, 4150, 4200, 4250, 4300],
+              borderColor: '#ef4444',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              borderDash: [5, 5]
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Workforce Planning'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: false,
+                title: {
+                  display: true,
+                  text: 'Number of Employees'
+                }
+              }
+            }
+          }
+        };
+        break;
+        
+      case 'Client Satisfaction Trends':
+        chartConfig = {
+          type: 'line',
+          data: {
+            labels: ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023', 'Q1 2024'],
+            datasets: [{
+              label: 'NPS Score',
+              data: [48, 52, 49, 55, 58],
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Net Promoter Score Trend'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                title: {
+                  display: true,
+                  text: 'NPS Score'
+                }
+              }
+            }
+          }
+        };
+        break;
+        
+      case 'Market Position Analysis':
+        chartConfig = {
+          type: 'radar',
+          data: {
+            labels: ['Market Share', 'Innovation', 'Client Satisfaction', 'Talent Quality', 'Financial Performance', 'Digital Capabilities'],
+            datasets: [{
+              label: 'Knowit',
+              data: [75, 85, 82, 88, 79, 92],
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99, 102, 241, 0.2)'
+            }, {
+              label: 'Industry Average',
+              data: [60, 70, 65, 72, 68, 75],
+              borderColor: '#9ca3af',
+              backgroundColor: 'rgba(156, 163, 175, 0.1)'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Competitive Positioning'
+              }
+            },
+            scales: {
+              r: {
+                beginAtZero: true,
+                max: 100
+              }
+            }
+          }
+        };
+        break;
+        
+      case 'Billing Rate Trends':
+        chartConfig = {
+          type: 'line',
+          data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+              label: 'Average Rate (€/hour)',
+              data: [115, 116, 117, 118, 119, 118],
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Consultant Billing Rates'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: false,
+                title: {
+                  display: true,
+                  text: 'Rate (€/hour)'
+                }
+              }
+            }
+          }
+        };
+        break;
+        
+      case 'Skills Coverage Analysis':
+        chartConfig = {
+          type: 'bar',
+          data: {
+            labels: ['Cloud', 'AI/ML', 'Data Science', 'Frontend', 'Backend', 'DevOps'],
+            datasets: [{
+              label: 'Available',
+              data: [85, 72, 68, 92, 88, 76],
+              backgroundColor: '#10b981'
+            }, {
+              label: 'Needed',
+              data: [90, 85, 80, 95, 90, 85],
+              backgroundColor: '#ef4444'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Skills Gap Analysis'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                title: {
+                  display: true,
+                  text: 'Coverage (%)'
+                }
+              }
+            }
+          }
+        };
+        break;
+        
+      case 'Revenue by Client Segment':
+        chartConfig = {
+          type: 'pie',
+          data: {
+            labels: ['Enterprise', 'Mid-Market', 'SMB', 'Government'],
+            datasets: [{
+              data: [45, 30, 15, 10],
+              backgroundColor: ['#6366f1', '#8b5cf6', '#06b6d4', '#10b981']
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Revenue Distribution by Segment'
+              },
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }
+        };
+        break;
+        
+      case 'Pipeline Forecast':
+        chartConfig = {
+          type: 'bar',
+          data: {
+            labels: ['Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6'],
+            datasets: [{
+              label: 'Qualified Leads',
+              data: [120, 135, 142, 158, 165, 172],
+              backgroundColor: '#06b6d4'
+            }, {
+              label: 'Expected Closes',
+              data: [35, 42, 48, 52, 58, 61],
+              backgroundColor: '#10b981'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Sales Pipeline Development'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Number of Opportunities'
+                }
+              }
+            }
+          }
+        };
+        break;
+        
+      default:
+        // Generic chart for unlisted charts
+        chartConfig = {
+          type: 'doughnut',
+          data: {
+            labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+            datasets: [{
+              data: [35, 25, 25, 15],
+              backgroundColor: ['#6366f1', '#8b5cf6', '#06b6d4', '#10b981']
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: chartName
+              },
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }
+        };
+    }
+    
+    // Create the chart
+    window.modalChart = new Chart(ctx, chartConfig);
+  }
   
   window.closeChatChartModal = function() {
     const modal = document.getElementById('chart-modal');
