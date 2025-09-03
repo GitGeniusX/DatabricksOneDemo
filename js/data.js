@@ -286,27 +286,70 @@ class MockDataService {
     return filteredResults;
   }
 
-  // Ask AI functionality
+  // Ask AI functionality with XML-based responses
   async askQuestion(question) {
     await this.delay(800); // Longer delay to simulate AI processing
     
-    const data = this.getData();
-    const responses = data.askResponses;
-    
-    // Simple keyword matching for demo responses
-    const lowerQuestion = question.toLowerCase();
-    
-    if (lowerQuestion.includes('margin') || lowerQuestion.includes('profit')) {
-      return responses.margin;
-    } else if (lowerQuestion.includes('bench') || lowerQuestion.includes('utilization')) {
-      return responses.bench;
-    } else if (lowerQuestion.includes('churn') || lowerQuestion.includes('client')) {
-      return responses.churn;
-    } else if (lowerQuestion.includes('performer') || lowerQuestion.includes('top')) {
-      return responses.performers;
+    // Try to load from XML first, fallback to generateAskResponses
+    try {
+      const response = await fetch('data/chat-responses.xml');
+      const xmlText = await response.text();
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+      
+      const lowerQuestion = question.toLowerCase().trim();
+      
+      // Find matching response category
+      const responses = xmlDoc.querySelectorAll('response');
+      let matchedResponse = null;
+      
+      for (const response of responses) {
+        const triggers = response.querySelector('triggers').textContent.split(',').map(t => t.trim().toLowerCase());
+        if (triggers.some(trigger => lowerQuestion.includes(trigger))) {
+          const text = response.querySelector('text').textContent.trim();
+          const chartElements = response.querySelectorAll('chart');
+          const charts = Array.from(chartElements).map(chart => chart.textContent.trim());
+          
+          matchedResponse = {
+            summary: text.split('\n').filter(line => line.trim()),
+            linkedVisuals: charts
+          };
+          break;
+        }
+      }
+      
+      // Default to first response if no match
+      if (!matchedResponse) {
+        const firstResponse = responses[0];
+        const text = firstResponse.querySelector('text').textContent.trim();
+        const chartElements = firstResponse.querySelectorAll('chart');
+        const charts = Array.from(chartElements).map(chart => chart.textContent.trim());
+        
+        matchedResponse = {
+          summary: text.split('\n').filter(line => line.trim()),
+          linkedVisuals: charts
+        };
+      }
+      
+      return matchedResponse;
+      
+    } catch (error) {
+      console.error('Error loading XML responses, falling back to built-in responses:', error);
+      
+      // Fallback to existing responses
+      const data = this.getData();
+      const responses = data.askResponses;
+      
+      const lowerQuestion = question.toLowerCase();
+      
+      if (lowerQuestion.includes('margin') || lowerQuestion.includes('profit')) {
+        return responses.margin;
+      } else if (lowerQuestion.includes('revenue') || lowerQuestion.includes('sales')) {
+        return responses.revenue;
+      } else {
+        return responses.default;
+      }
     }
-    
-    return responses.default;
   }
 
   // Generate mock forecast data
@@ -490,7 +533,7 @@ class MockDataService {
     };
   }
 
-  // Generate mock AI responses
+  // Generate comprehensive mock AI responses
   generateAskResponses() {
     return {
       margin: {
@@ -508,6 +551,36 @@ class MockDataService {
         ],
         query: "SELECT margin, delivery_cost, rate FROM financial_data WHERE period = 'last_month'"
       },
+      revenue: {
+        question: "How is revenue trending this quarter?",
+        summary: [
+          "Q1 revenue tracking 12% above last year (+€2.8M)",
+          "Solutions BU leading growth with €980K (+15% YoY)",
+          "Experience BU recovering from Q4 slowdown (+8% YoY)",
+          "Pipeline coverage at 1.3x for Q2, indicating strong momentum"
+        ],
+        linkedVisuals: [
+          "Revenue Growth Dashboard",
+          "BU Performance Comparison",
+          "Pipeline Conversion Analysis"
+        ],
+        query: "SELECT revenue, growth_rate FROM quarterly_data WHERE quarter = 'Q1_2025'"
+      },
+      costs: {
+        question: "Where are our highest costs?",
+        summary: [
+          "Personnel costs represent 78% of total expenses (€18.4M)",
+          "Subcontractor costs increased 22% due to capacity constraints",
+          "Travel and facilities down 15% with hybrid work adoption",
+          "Technology investments up 35% supporting digital transformation"
+        ],
+        linkedVisuals: [
+          "Cost Structure Analysis",
+          "Expense Category Trends",
+          "Cost per Employee Metrics"
+        ],
+        query: "SELECT cost_category, amount, variance FROM cost_analysis WHERE period = 'current'"
+      },
       bench: {
         question: "Forecast bench utilization in Sweden",
         summary: [
@@ -522,6 +595,21 @@ class MockDataService {
           "Resource Allocation Plan"
         ],
         query: "SELECT * FROM bench_forecast WHERE country = 'Sweden' AND weeks <= 8"
+      },
+      delivery: {
+        question: "How are our project deliveries performing?",
+        summary: [
+          "On-time delivery rate: 92% (+3% vs last quarter)",
+          "Average project duration: 14.2 weeks (-0.8 weeks improvement)",
+          "Budget overrun rate decreased to 12% from 18%",
+          "Client satisfaction scores averaging 8.4/10 across active projects"
+        ],
+        linkedVisuals: [
+          "Project Performance Dashboard",
+          "Delivery Timeline Analysis",
+          "Budget vs Actual Tracking"
+        ],
+        query: "SELECT project_id, delivery_status, budget_variance FROM project_metrics"
       },
       churn: {
         question: "Which clients are at churn risk?",
@@ -538,6 +626,21 @@ class MockDataService {
         ],
         query: "SELECT * FROM client_risk WHERE churn_probability > 0.7 AND renewal_date <= '2025-03-31'"
       },
+      nps: {
+        question: "How is client satisfaction trending?",
+        summary: [
+          "Overall NPS improved to 7.8 (+0.4 points from last quarter)",
+          "Solutions practice leading with NPS 8.2",
+          "Experience practice NPS recovered to 7.4 after Q4 issues",
+          "Key drivers: faster response times and improved delivery quality"
+        ],
+        linkedVisuals: [
+          "NPS Trend Analysis",
+          "Client Satisfaction Heatmap",
+          "Service Quality Metrics"
+        ],
+        query: "SELECT client, nps_score, survey_date FROM satisfaction_data ORDER BY survey_date DESC"
+      },
       performers: {
         question: "Show top performers by utilization",
         summary: [
@@ -552,6 +655,96 @@ class MockDataService {
           "Skills vs Performance Matrix"
         ],
         query: "SELECT consultant, AVG(utilization) FROM performance_data GROUP BY consultant ORDER BY utilization DESC LIMIT 10"
+      },
+      skills: {
+        question: "What skills gaps do we have?",
+        summary: [
+          "Critical skill gap in AI/ML expertise: 65% shortage vs demand",
+          "Cloud architecture skills 85% covered, improving trend",
+          "Data engineering demand exceeding supply by 40%",
+          "Recommended: accelerate training programs and strategic hiring"
+        ],
+        linkedVisuals: [
+          "Skills Gap Analysis",
+          "Training Progress Dashboard",
+          "Hiring vs Demand Forecast"
+        ],
+        query: "SELECT skill_category, demand, supply, gap_percentage FROM skills_analysis"
+      },
+      attrition: {
+        question: "What's driving employee turnover?",
+        summary: [
+          "Annual attrition rate: 12.2% (below industry average of 15%)",
+          "Top reasons: career growth (35%), compensation (28%), work-life balance (22%)",
+          "Solutions BU has lowest attrition at 8.5%",
+          "Early intervention program reduced at-risk departures by 40%"
+        ],
+        linkedVisuals: [
+          "Attrition Analysis Dashboard",
+          "Exit Interview Insights",
+          "Retention Strategy Effectiveness"
+        ],
+        query: "SELECT department, attrition_rate, primary_reason FROM hr_analytics"
+      },
+      growth: {
+        question: "Which markets have highest growth potential?",
+        summary: [
+          "Finland showing strongest growth potential: +25% market expansion",
+          "Digital transformation services up 40% across all Nordic markets",
+          "AI consulting demand growing 60% YoY in enterprise segment",
+          "Sustainability consulting emerging as high-value opportunity"
+        ],
+        linkedVisuals: [
+          "Market Growth Analysis",
+          "Service Line Expansion",
+          "Competitive Landscape Map"
+        ],
+        query: "SELECT market, growth_rate, opportunity_size FROM market_analysis ORDER BY growth_rate DESC"
+      },
+      forecast: {
+        question: "What do the forecasts predict?",
+        summary: [
+          "Q2 revenue forecast: €7.2M (+8% vs Q1)",
+          "Utilization expected to reach 85% by end of Q2",
+          "New client acquisitions: 4-6 enterprise deals forecasted",
+          "Confidence level: 78% based on pipeline and historical patterns"
+        ],
+        linkedVisuals: [
+          "Revenue Forecast Model",
+          "Utilization Projections",
+          "Pipeline Probability Analysis"
+        ],
+        query: "SELECT forecast_period, predicted_value, confidence_interval FROM forecast_models"
+      },
+      comparison: {
+        question: "How do we compare to last year?",
+        summary: [
+          "Revenue up 12.3% YoY (€2.8M increase)",
+          "Margin improved 1.2 percentage points to 32.4%",
+          "Utilization increased from 79% to 82%",
+          "Client satisfaction improved from 7.4 to 7.8 NPS"
+        ],
+        linkedVisuals: [
+          "Year-over-Year Comparison",
+          "KPI Trend Dashboard",
+          "Performance Benchmarks"
+        ],
+        query: "SELECT metric, current_value, prior_year_value, variance FROM annual_comparison"
+      },
+      trends: {
+        question: "What patterns are emerging in our data?",
+        summary: [
+          "Seasonal utilization pattern: Q1 typically starts 5% below average",
+          "Client engagement cycles: 18-month average relationship duration",
+          "Technology project sizes increasing 25% annually",
+          "Remote work adoption stabilized at 65% hybrid model"
+        ],
+        linkedVisuals: [
+          "Trend Pattern Analysis",
+          "Seasonal Adjustment Models",
+          "Cyclical Behavior Insights"
+        ],
+        query: "SELECT trend_type, pattern_description, confidence_score FROM trend_analysis"
       },
       default: {
         question: "General business question",

@@ -14,6 +14,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+<!-- Navigation will be inserted here -->
+<div id="nav-placeholder"></div>
+
 <div class="container" id="home">
   <div class="header">
     <div class="brand">
@@ -26,11 +29,21 @@
     <h1>Hi, KYD!</h1>
     <p>What would you like to know?</p>
     <div class="search">
-      <div class="box">
-        <button class="btn-toggle" id="mode-search">Search</button>
-        <button class="btn-toggle active" id="mode-ask">Ask AI</button>
-        <input id="searchInput" placeholder="Ask me anything about your data..." />
-        <button class="go" id="goButton" title="Go">✈️</button>
+      <div class="box" id="search-box">
+        <!-- Chat Messages Area (hidden initially) -->
+        <div class="chat-messages-area" id="chat-messages-area" style="display: none;">
+          <div class="chat-messages" id="home-chat-messages">
+            <!-- AI responses appear here -->
+          </div>
+        </div>
+        
+        <!-- Input Controls (always visible at bottom of box) -->
+        <div class="input-controls">
+          <button class="btn-toggle" id="mode-search">Search</button>
+          <button class="btn-toggle active" id="mode-ask">Ask AI</button>
+          <input id="searchInput" placeholder="Ask me anything about your data..." />
+          <button class="go" id="goButton" title="Go">✈️</button>
+        </div>
       </div>
     </div>
   </div>
@@ -188,5 +201,217 @@
 <script src="js/navigation.js"></script>
 <script src="js/interactions.js"></script>
 <script src="js/app.js"></script>
+  
+<!-- Chat Enhancement Script -->
+<script>
+  // Override old search to enable chat functionality
+  window.addEventListener('DOMContentLoaded', function() {
+    // Initialize home chat interface
+    initializeHomeChatInterface();
+  });
+    
+  // Home Chat Interface Functions
+  function initializeHomeChatInterface() {
+    // No separate chat input needed - using main search box only
+    console.log('Home chat interface initialized');
+  }
+  
+  function startHomeChatWithQuery(query) {
+    const searchBox = document.getElementById('search-box');
+    const chatMessagesArea = document.getElementById('chat-messages-area');
+    const searchInput = document.getElementById('searchInput');
+    
+    // Show chat area and expand box
+    chatMessagesArea.style.display = 'block';
+    searchBox.classList.add('chat-active');
+    
+    // Clear search input
+    searchInput.value = '';
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    // Simulate AI response
+    setTimeout(async () => {
+      try {
+        const response = await mockData.askQuestion(query);
+        hideTypingIndicator();
+        addChatMessage(response, 'assistant');
+      } catch (error) {
+        hideTypingIndicator();
+        addChatMessage({
+          summary: ['Sorry, I encountered an error processing your question. Please try again.'],
+          linkedVisuals: []
+        }, 'assistant');
+      }
+    }, 1500);
+  }
+  
+
+
+  function addChatMessage(content, sender) {
+    const chatMessages = document.getElementById('home-chat-messages');
+    if (!chatMessages) return;
+      
+    // Only show AI responses
+    if (sender === 'user') {
+      return;
+    }
+    
+    // Clear any existing messages to prevent duplicates
+    chatMessages.innerHTML = '';
+      
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-message assistant';
+      
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+      
+    // Clean response without avatars or timestamps
+    const summaryHtml = content.summary.map(point => 
+      `<div class="ask-response-line">${escapeHtml(point)}</div>`
+    ).join('');
+        
+    const linksHtml = content.linkedVisuals.length > 0 ? `
+      <div class="message-links">
+        ${content.linkedVisuals.map(visual => 
+          `<button class="chart-link" onclick="openChatChart('${escapeHtml(visual)}')">
+            <i class="fas fa-chart-bar"></i> ${escapeHtml(visual)}
+          </button>`
+        ).join('')}
+      </div>
+    ` : '';
+        
+    messageContent.innerHTML = `
+      <div class="message-text">
+        ${summaryHtml}
+        ${linksHtml}
+      </div>
+    `;
+      
+    messageDiv.appendChild(messageContent);
+    chatMessages.appendChild(messageDiv);
+    
+    // Scroll to bottom if needed
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+    
+  function showTypingIndicator() {
+    const chatMessages = document.getElementById('home-chat-messages');
+    if (!chatMessages) return;
+      
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'typing-indicator';
+    typingDiv.id = 'typing-indicator';
+      
+    typingDiv.innerHTML = `
+      <span style="color: #6b7280; font-size: 14px; font-style: italic;">AI is thinking...</span>
+      <div class="typing-dots">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    `;
+      
+    chatMessages.appendChild(typingDiv);
+  }
+    
+  function hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    if (typingIndicator) {
+      typingIndicator.remove();
+    }
+  }
+    
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+  
+  // Chart Modal Setup
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add chart modal to body
+    const chartModal = document.createElement('div');
+    chartModal.id = 'chart-modal';
+    chartModal.className = 'chart-modal';
+    chartModal.innerHTML = `
+      <div class="chart-modal-content">
+        <div class="chart-modal-header">
+          <div class="chart-modal-title">
+            <i class="fas fa-chart-bar"></i>
+            <span id="chart-modal-title-text">Chart Title</span>
+          </div>
+          <button class="chart-modal-close" onclick="closeChatChartModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="chart-modal-body" id="chart-modal-body">
+          <div class="chart-placeholder">
+            <div class="chart-placeholder-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <h4>Interactive Chart View</h4>
+            <p>This would show the full interactive chart with drill-down capabilities, filters, and export options.</p>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(chartModal);
+  });
+    
+  // Override old runQuery to start home chat
+  const originalRunQuery = window.runQuery;
+  window.runQuery = function() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) return;
+      
+    // Start chat on home page
+    startHomeChatWithQuery(q);
+  };
+  
+  // Remove old event listeners and add new ones that use our override
+  setTimeout(() => {
+    const goButton = document.getElementById('goButton');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (goButton) {
+      // Clone button to remove all event listeners
+      const newGoButton = goButton.cloneNode(true);
+      goButton.parentNode.replaceChild(newGoButton, goButton);
+      // Add our new event listener
+      newGoButton.addEventListener('click', window.runQuery);
+    }
+    
+    if (searchInput) {
+      // Clone input to remove all event listeners
+      const newSearchInput = searchInput.cloneNode(true);
+      searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+      // Add our new event listener
+      newSearchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') window.runQuery();
+      });
+    }
+  }, 100);
+    
+  // No need for enhanced showPage anymore - just use original
+  
+  // Chart modal functions for chat links
+  window.openChatChart = function(chartName) {
+    const modal = document.getElementById('chart-modal');
+    const titleElement = document.getElementById('chart-modal-title-text');
+    if (modal && titleElement) {
+      titleElement.textContent = chartName;
+      modal.classList.add('active');
+    }
+  };
+  
+  window.closeChatChartModal = function() {
+    const modal = document.getElementById('chart-modal');
+    if (modal) {
+      modal.classList.remove('active');
+    }
+  };
+</script>
 </body>
 </html>

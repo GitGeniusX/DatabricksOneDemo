@@ -286,27 +286,206 @@ console.log('Navigation module loaded - functionality in app.js');
   }
 
   initAskPage() {
-    const askInput = document.getElementById('ask-input');
-    const askButton = document.getElementById('ask-button');
+    // Initialize chat interface
+    this.initChatInterface();
     
-    if (askInput && askButton) {
-      askButton.addEventListener('click', () => {
-        interactions.handleAskQuestion(askInput.value);
-      });
-
-      askInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && e.ctrlKey) {
-          interactions.handleAskQuestion(askInput.value);
-        }
-      });
-    }
-
     // Initialize example buttons
     document.querySelectorAll('.ask-example-button').forEach(button => {
       button.addEventListener('click', (e) => {
-        askInput.value = e.currentTarget.textContent;
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) {
+          chatInput.value = e.currentTarget.textContent;
+          this.autoResizeChatInput(chatInput);
+          this.updateSendButtonState();
+          chatInput.focus();
+        }
       });
     });
+  }
+  
+  initChatInterface() {
+    const chatInput = document.getElementById('chat-input');
+    const chatSend = document.getElementById('chat-send');
+    
+    if (chatInput && chatSend) {
+      // Auto-resize textarea
+      chatInput.addEventListener('input', () => {
+        this.autoResizeChatInput(chatInput);
+        this.updateSendButtonState();
+      });
+      
+      // Handle send button click
+      chatSend.addEventListener('click', () => {
+        this.sendChatMessage();
+      });
+      
+      // Handle Enter key (without Shift)
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          this.sendChatMessage();
+        }
+      });
+      
+      // Initial state
+      this.updateSendButtonState();
+    }
+  }
+  
+  autoResizeChatInput(textarea) {
+    textarea.style.height = 'auto';
+    const newHeight = Math.min(textarea.scrollHeight, 120);
+    textarea.style.height = newHeight + 'px';
+  }
+  
+  updateSendButtonState() {
+    const chatInput = document.getElementById('chat-input');
+    const chatSend = document.getElementById('chat-send');
+    
+    if (chatInput && chatSend) {
+      const hasText = chatInput.value.trim().length > 0;
+      chatSend.disabled = !hasText;
+    }
+  }
+  
+  async sendChatMessage() {
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+    
+    if (!chatInput || !chatMessages) return;
+    
+    const message = chatInput.value.trim();
+    if (!message) return;
+    
+    // Clear welcome message if present
+    const welcome = chatMessages.querySelector('.chat-welcome');
+    if (welcome) {
+      welcome.remove();
+    }
+    
+    // Add user message
+    this.addChatMessage(message, 'user');
+    
+    // Clear input
+    chatInput.value = '';
+    this.autoResizeChatInput(chatInput);
+    this.updateSendButtonState();
+    
+    // Show typing indicator
+    this.showTypingIndicator();
+    
+    // Simulate AI response
+    try {
+      const response = await mockData.askQuestion(message);
+      this.hideTypingIndicator();
+      this.addChatMessage(response, 'assistant', message);
+    } catch (error) {
+      this.hideTypingIndicator();
+      this.addChatMessage({
+        summary: ['Sorry, I encountered an error processing your question. Please try again.'],
+        linkedVisuals: []
+      }, 'assistant', message);
+    }
+  }
+  
+  addChatMessage(content, sender, originalQuestion = null) {
+    const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) return;
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender}`;
+    
+    const avatar = document.createElement('div');
+    avatar.className = `message-avatar ${sender}`;
+    avatar.textContent = sender === 'user' ? 'U' : 'AI';
+    
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+    
+    const now = new Date();
+    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    if (sender === 'user') {
+      messageContent.innerHTML = `
+        <p class="message-text">${this.escapeHtml(content)}</p>
+        <div class="message-time">${timeString}</div>
+      `;
+    } else {
+      // AI response
+      const summaryHtml = content.summary.map(point => 
+        `<div class="ask-response-bullet">${this.escapeHtml(point)}</div>`
+      ).join('');
+      
+      const linksHtml = content.linkedVisuals.length > 0 ? `
+        <div class="message-links">
+          ${content.linkedVisuals.map(visual => 
+            `<button class="chart-link" onclick="openChatChart('${this.escapeHtml(visual)}')">
+              <i class="fas fa-chart-bar"></i> ${this.escapeHtml(visual)}
+            </button>`
+          ).join('')}
+        </div>
+      ` : '';
+      
+      messageContent.innerHTML = `
+        <div class="message-text">
+          ${originalQuestion ? `<div style="margin-bottom: 1rem; font-style: italic; color: var(--text-secondary);">"${this.escapeHtml(originalQuestion)}"</div>` : ''}
+          ${summaryHtml}
+          ${linksHtml}
+        </div>
+        <div class="message-time">${timeString}</div>
+      `;
+    }
+    
+    messageDiv.appendChild(avatar);
+    messageDiv.appendChild(messageContent);
+    
+    chatMessages.appendChild(messageDiv);
+    
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+  
+  showTypingIndicator() {
+    const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) return;
+    
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-message assistant';
+    typingDiv.id = 'typing-indicator';
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar assistant';
+    avatar.textContent = 'AI';
+    
+    const typingContent = document.createElement('div');
+    typingContent.className = 'typing-indicator';
+    typingContent.innerHTML = `
+      <span style="color: var(--text-secondary); font-size: var(--font-size-sm);">AI is thinking</span>
+      <div class="typing-dots">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    `;
+    
+    typingDiv.appendChild(avatar);
+    typingDiv.appendChild(typingContent);
+    
+    chatMessages.appendChild(typingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+  
+  hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    if (typingIndicator) {
+      typingIndicator.remove();
+    }
+  }
+  
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   handleGlobalSearch(query) {
@@ -613,31 +792,66 @@ const pageTemplates = {
   ask() {
     return `
       <div class="ask-container">
-        <div class="ask-input-container">
-          <textarea id="ask-input" class="ask-input" 
-                    placeholder="Ask a question about your Databricks data, analytics, or business metrics..."></textarea>
+        <div class="chat-container">
+          <div class="chat-header">
+            <h3><i class="fas fa-robot"></i> Databricks AI Assistant</h3>
+          </div>
           
-          <div class="ask-examples">
-            <div class="ask-examples-title">Try these examples:</div>
-            <div class="ask-example-buttons">
-              <button class="ask-example-button">What are our top performing products by revenue this quarter?</button>
-              <button class="ask-example-button">Show me customer churn trends in the last 6 months</button>
-              <button class="ask-example-button">Which markets have the highest growth potential?</button>
-              <button class="ask-example-button">Analyze utilization rates across all business units</button>
-              <button class="ask-example-button">What's driving the revenue variance in Q1?</button>
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-welcome">
+              <div class="chat-welcome-icon">
+                <i class="fas fa-robot"></i>
+              </div>
+              <h3>Welcome to Databricks AI Assistant</h3>
+              <p>I can help you analyze your business data, explore insights, and answer questions about your analytics. Try asking me about financial performance, delivery metrics, or client insights.</p>
+              
+              <div class="ask-examples">
+                <div class="ask-examples-title">Try these examples:</div>
+                <div class="ask-example-buttons">
+                  <button class="ask-example-button">What are our top performing products by revenue this quarter?</button>
+                  <button class="ask-example-button">Show me customer churn trends in the last 6 months</button>
+                  <button class="ask-example-button">Which markets have the highest growth potential?</button>
+                  <button class="ask-example-button">Analyze utilization rates across all business units</button>
+                  <button class="ask-example-button">What's driving the revenue variance in Q1?</button>
+                </div>
+              </div>
             </div>
           </div>
           
-          <div class="page-actions">
-            <button id="ask-button" class="btn btn-primary">
-              <i class="fas fa-robot"></i>
-              Ask Databricks AI
-            </button>
+          <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+              <textarea id="chat-input" class="chat-input" 
+                        placeholder="Ask me anything about your Databricks data and analytics..."
+                        rows="1"></textarea>
+              <button id="chat-send" class="chat-send-button" disabled>
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
           </div>
         </div>
         
-        <div id="ask-response" class="ask-response" style="display: none;">
-          <!-- AI response will be populated here -->
+        <!-- Chart Modal -->
+        <div id="chart-modal" class="chart-modal">
+          <div class="chart-modal-content">
+            <div class="chart-modal-header">
+              <div class="chart-modal-title">
+                <i class="fas fa-chart-bar"></i>
+                <span id="chart-modal-title-text">Chart Title</span>
+              </div>
+              <button class="chart-modal-close" onclick="closeChatChartModal()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="chart-modal-body" id="chart-modal-body">
+              <div class="chart-placeholder">
+                <div class="chart-placeholder-icon">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                <h4>Interactive Chart View</h4>
+                <p>This would show the full interactive chart with drill-down capabilities, filters, and export options.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     `;

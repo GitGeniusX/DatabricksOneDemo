@@ -106,7 +106,9 @@ body .brand .logo {
 
 .hero { 
   margin: 32px 0 24px; 
-  text-align:center; 
+  text-align:center;
+  display: flex;
+  flex-direction: column;
 }
 
 .hero h1 { 
@@ -128,15 +130,49 @@ body .brand .logo {
 
 .search .box { 
   display:flex; 
-  align-items:center; 
-  gap:8px; 
+  flex-direction: column; /* Changed to column for vertical expansion */
+  align-items: stretch;
+  gap:0; 
   width: 100%; 
   max-width: 900px; 
   background: var(--card-bg); 
   border: 1px solid #eceaf6; 
   box-shadow: var(--shadow); 
-  padding:12px; 
+  padding:0; /* Remove padding, add to children instead */
   border-radius: 999px; 
+  transition: all 0.3s ease; /* Smooth expansion animation */
+  overflow: hidden;
+}
+
+/* When chat is active, change border radius for expansion */
+.search .box.chat-active {
+  border-radius: 24px; /* Less rounded when expanded */
+}
+
+/* Chat messages area inside the box */
+.search .box .chat-messages-area {
+  padding: 20px 24px;
+  border-bottom: 1px solid #eceaf6;
+  background: #fff;
+  text-align: left;
+}
+
+.search .box .chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+/* Input controls at bottom of box */
+.search .box .input-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--card-bg);
+  border-radius: inherit;
 }
 
 .btn-toggle { 

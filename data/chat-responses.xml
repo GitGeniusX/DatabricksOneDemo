@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chatResponses>
+  <response category="general">
+    <triggers>tell me more,about what,help,hello,hi</triggers>
+    <text>I can help you analyze your consulting business data
+Try asking about financial performance, delivery metrics, or client insights
+I can provide forecasts, identify trends, and explain variances
+Use specific questions for more detailed analysis</text>
+    <charts>
+      <chart>Business Overview Dashboard</chart>
+      <chart>Key Metrics Summary</chart>
+      <chart>Performance Trends</chart>
+    </charts>
+  </response>
+
+  <response category="financial">
+    <triggers>revenue,profit,margin,financial,billing,cost</triggers>
+    <text>Current revenue is tracking 6.2% above plan for Q1
+Gross margin improved to 31.4% (+1.2pp vs target)
+Revenue per consultant reached €198k (+3.1% growth)
+Average billing rate increased to €118/hour</text>
+    <charts>
+      <chart>Revenue Forecast vs Actuals</chart>
+      <chart>Margin Analysis by Service Line</chart>
+      <chart>Billing Rate Trends</chart>
+    </charts>
+  </response>
+
+  <response category="delivery">
+    <triggers>utilization,delivery,projects,capacity,resources</triggers>
+    <text>Overall utilization is 78.4% (+2.3pp improvement)
+Bench percentage reduced to 6.8% (-0.9pp)
+On-time delivery rate at 92.0% (+0.8pp)
+Average project duration: 14.2 weeks (-0.4w improvement)</text>
+    <charts>
+      <chart>Utilization Heatmap</chart>
+      <chart>Resource Allocation Forecast</chart>
+      <chart>Project Delivery Metrics</chart>
+    </charts>
+  </response>
+
+  <response category="people">
+    <triggers>headcount,employees,talent,hiring,attrition,skills</triggers>
+    <text>Current headcount: 3,980 (+25 net additions this month)
+Attrition rate: 12.2% (-0.4pp improvement)
+Time to staff reduced to 6.1 days (-0.3d)
+Training hours per FTE: 3.8h (+0.5h increase)</text>
+    <charts>
+      <chart>Headcount vs Demand Forecast</chart>
+      <chart>Skills Coverage Analysis</chart>
+      <chart>Attrition Trends</chart>
+    </charts>
+  </response>
+
+  <response category="clients">
+    <triggers>clients,customers,nps,satisfaction,churn,retention</triggers>
+    <text>Net Promoter Score: 55 (+3 points improvement)
+Client retention rate: 68% (+1pp)
+Top-5 client concentration: 41% (-2pp diversification)
+Average deal size: €186k (+4.4% growth)</text>
+    <charts>
+      <chart>Client Satisfaction Trends</chart>
+      <chart>Revenue by Client Segment</chart>
+      <chart>Retention Analysis</chart>
+    </charts>
+  </response>
+
+  <response category="strategic">
+    <triggers>strategy,market,competition,growth,forecast</triggers>
+    <text>Market position strengthening in Nordic region
+Pipeline coverage at 1.3x for next 90 days
+Growth opportunities identified in AI/ML services
+Competitive advantage in digital transformation projects</text>
+    <charts>
+      <chart>Market Position Analysis</chart>
+      <chart>Pipeline Forecast</chart>
+      <chart>Growth Opportunities</chart>
+    </charts>
+  </response>
+</chatResponses>

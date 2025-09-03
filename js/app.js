@@ -341,7 +341,7 @@ const App = {
   }
 };
 
-// Initialize on page load
+// Initialize navigation when DOM is loaded
 window.addEventListener('DOMContentLoaded', function() {
   console.log('Knowit Performance Hub - Sprint 0 Canvas');
   
@@ -357,15 +357,23 @@ window.addEventListener('DOMContentLoaded', function() {
   // Initialize theme and logo handling
   initializeThemeAndLogo();
   
-  if (typeof showPage === 'function') {
-    showPage('home');
+  // Initialize new navigation system
+  if (typeof NavigationManager !== 'undefined') {
+    window.nav = new NavigationManager();
+    nav.init();
+    nav.loadInitialPage();
+  } else {
+    // Fallback to old system
+    if (typeof showPage === 'function') {
+      showPage('home');
+    }
+    
+    // Set up all event listeners
+    setupEventListeners();
+    
+    // Render mini charts on home page
+    renderHomeMinis();
   }
-  
-  // Set up all event listeners
-  setupEventListeners();
-  
-  // Render mini charts on home page
-  renderHomeMinis();
 });
 
 /* ---------- Theme and Logo Management ---------- */
@@ -735,6 +743,170 @@ function renderClients(){
 
 // Export debug function for console use
 window.getDebugInfo = () => app.getDebugInfo();
+
+/* ---------- Chat Chart Modal Functions ---------- */
+function openChatChart(chartName) {
+  const modal = document.getElementById('chart-modal');
+  const titleElement = document.getElementById('chart-modal-title-text');
+  const bodyElement = document.getElementById('chart-modal-body');
+  
+  if (!modal || !titleElement || !bodyElement) return;
+  
+  // Set title
+  titleElement.textContent = chartName;
+  
+  // Create mock chart content based on chart name
+  const chartData = getChartMockData(chartName);
+  
+  bodyElement.innerHTML = `
+    <div class="chart-placeholder">
+      <div class="chart-placeholder-icon">
+        <i class="fas fa-chart-${getChartIcon(chartName)}"></i>
+      </div>
+      <h4>${chartName}</h4>
+      <div style="margin: 2rem 0; padding: 1rem; background: var(--bg-light); border-radius: 8px;">
+        <p><strong>Interactive Features:</strong></p>
+        <ul style="text-align: left; margin: 1rem 0; padding-left: 1.5rem;">
+          <li>Drill-down by clicking data points</li>
+          <li>Filter by time range, business unit, or geography</li>
+          <li>Export to Excel/PDF</li>
+          <li>Set up automated alerts</li>
+          <li>Share permalink with colleagues</li>
+        </ul>
+        <p><strong>Current View:</strong> ${chartData.description}</p>
+        <p><strong>Last Updated:</strong> ${chartData.lastUpdated}</p>
+      </div>
+      <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+        <button class="btn btn-primary" onclick="showTooltip('Export functionality would be available in the full application')">
+          <i class="fas fa-download"></i> Export Data
+        </button>
+        <button class="btn btn-secondary" onclick="showTooltip('Real-time drill-down would be available with live data')">
+          <i class="fas fa-search-plus"></i> Drill Down
+        </button>
+        <button class="btn btn-ghost" onclick="closeChatChartModal()">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+    </div>
+  `;
+  
+  // Show modal
+  modal.classList.add('active');
+  
+  // Add click outside to close
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeChatChartModal();
+    }
+  });
+}
+
+function closeChatChartModal() {
+  const modal = document.getElementById('chart-modal');
+  if (modal) {
+    modal.classList.remove('active');
+  }
+}
+
+function getChartIcon(chartName) {
+  const name = chartName.toLowerCase();
+  if (name.includes('trend') || name.includes('forecast')) return 'line';
+  if (name.includes('breakdown') || name.includes('cost')) return 'bar';
+  if (name.includes('performance') || name.includes('ranking')) return 'chart-line';
+  if (name.includes('distribution') || name.includes('matrix')) return 'chart-area';
+  return 'bar';
+}
+
+function getChartMockData(chartName) {
+  const mockData = {
+    'Margin Trend Analysis': {
+      description: '12-month margin progression with variance drivers and confidence intervals',
+      lastUpdated: '2 hours ago'
+    },
+    'Cost Breakdown by BU': {
+      description: 'Detailed cost analysis across business units with allocation methodology',
+      lastUpdated: '1 hour ago'
+    },
+    'Rate Realization Report': {
+      description: 'Billing rate achievement vs. target rates by service line and seniority',
+      lastUpdated: '30 minutes ago'
+    },
+    'Sweden Bench Forecast': {
+      description: '8-week rolling forecast of bench resources with utilization scenarios',
+      lastUpdated: '45 minutes ago'
+    },
+    'Pipeline Conversion Timeline': {
+      description: 'Sales pipeline progression with probability-weighted revenue forecasts',
+      lastUpdated: '1 hour ago'
+    },
+    'Resource Allocation Plan': {
+      description: 'Strategic resource planning across projects and business units',
+      lastUpdated: '2 hours ago'
+    },
+    'Consultant Performance Ranking': {
+      description: 'Individual performance metrics with utilization and client satisfaction scores',
+      lastUpdated: '4 hours ago'
+    },
+    'Utilization Distribution': {
+      description: 'Statistical distribution of consultant utilization rates with benchmarks',
+      lastUpdated: '1 hour ago'
+    },
+    'Skills vs Performance Matrix': {
+      description: 'Skill proficiency mapped against performance outcomes and career progression',
+      lastUpdated: '6 hours ago'
+    },
+    'Business Overview Dashboard': {
+      description: 'Executive summary of key business metrics with real-time updates',
+      lastUpdated: '30 minutes ago'
+    },
+    'Key Metrics Summary': {
+      description: 'Consolidated view of critical KPIs across all business functions',
+      lastUpdated: '15 minutes ago'
+    },
+    'Performance Trends': {
+      description: 'Historical performance analysis with trend identification and forecasting',
+      lastUpdated: '1 hour ago'
+    }
+  };
+  
+  return mockData[chartName] || {
+    description: 'Interactive business intelligence visualization with drill-down capabilities',
+    lastUpdated: '1 hour ago'
+  };
+}
+
+function showTooltip(message) {
+  // Simple tooltip implementation
+  const tooltip = document.createElement('div');
+  tooltip.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.9);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    z-index: 10000;
+    max-width: 300px;
+    text-align: center;
+    font-size: 14px;
+    animation: fadeIn 0.3s ease-out;
+  `;
+  tooltip.textContent = message;
+  document.body.appendChild(tooltip);
+  
+  setTimeout(() => {
+    tooltip.remove();
+  }, 3000);
+}
+
+// Add global event listener for escape key to close modals
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeChatChartModal();
+  }
+});
 
 // Add helpful console messages
 console.log('%c🚀 Consulting Analytics Dashboard', 'color: #1f4788; font-size: 16px; font-weight: bold;');
